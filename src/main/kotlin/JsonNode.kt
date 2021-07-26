@@ -19,9 +19,11 @@ interface JsonNode {
     fun get(key: String): JsonNode
     fun find(key: String): JsonNode
 
+    fun isMissing(): Boolean
+
     override fun toString(): String
 
-    object MissingNode: JsonNode{
+    object MissingNode : JsonNode {
         override fun isArray(): Boolean {
             TODO("Not yet implemented")
         }
@@ -75,6 +77,10 @@ interface JsonNode {
         }
 
         override fun find(key: String): JsonNode {
+            TODO("Not yet implemented")
+        }
+
+        override fun isMissing(): Boolean {
             TODO("Not yet implemented")
         }
 
