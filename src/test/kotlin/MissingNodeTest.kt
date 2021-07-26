@@ -1,20 +1,19 @@
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import snowesamosc.kotlinjsonparser.node.JsonNode
 import snowesamosc.kotlinjsonparser.JsonValueNotFoundException
+import snowesamosc.kotlinjsonparser.node.MissingNode
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-internal class JsonNodeTest {
+internal class MissingNodeTest {
     @Test
     internal fun valueCheckTest() {
-        val missingNode = JsonNode.MissingNode
+        val missingNode = MissingNode
 
         assertFalse { missingNode.isArray() }
         assertFalse { missingNode.isNumber() }
         assertFalse { missingNode.isInt() }
-        assertFalse { missingNode.isFraction() }
         assertFalse { missingNode.isBoolean() }
         assertFalse { missingNode.isText() }
         assertFalse { missingNode.isArray() }
@@ -23,7 +22,7 @@ internal class JsonNodeTest {
 
     @Test
     internal fun valueTest() {
-        val missingNode = JsonNode.MissingNode
+        val missingNode = MissingNode
 
         assertTrue(missingNode.asArray().isEmpty())
         assertEquals("", missingNode.asText())
@@ -34,15 +33,15 @@ internal class JsonNodeTest {
 
     @Test
     internal fun childTest() {
-        val missingNode = JsonNode.MissingNode
+        val missingNode = MissingNode
 
         assertThrows<JsonValueNotFoundException> { missingNode.get("hoge") }
-        assertEquals(JsonNode.MissingNode, missingNode.find("fuga"))
+        assertEquals(MissingNode, missingNode.find("fuga"))
     }
 
     @Test
     internal fun missingTest() {
-        val missingNode = JsonNode.MissingNode
+        val missingNode = MissingNode
 
         assertTrue { missingNode.isMissing() }
     }
