@@ -1,0 +1,1 @@
+class JsonValueNotFoundException(message: String) : RuntimeException(message)
