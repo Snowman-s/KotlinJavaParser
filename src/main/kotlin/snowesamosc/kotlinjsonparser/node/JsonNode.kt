@@ -1,3 +1,7 @@
+package snowesamosc.kotlinjsonparser.node
+
+import snowesamosc.kotlinjsonparser.JsonValueNotFoundException
+
 interface JsonNode {
     fun isArray(): Boolean
     fun asArray(): Array<JsonNode>

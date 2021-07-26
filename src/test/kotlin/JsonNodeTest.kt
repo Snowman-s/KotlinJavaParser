@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertContentEquals
+import snowesamosc.kotlinjsonparser.node.JsonNode
+import snowesamosc.kotlinjsonparser.JsonValueNotFoundException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
