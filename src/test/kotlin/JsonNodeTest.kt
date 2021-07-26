@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -23,7 +24,7 @@ internal class JsonNodeTest {
     internal fun valueTest() {
         val missingNode = JsonNode.MissingNode
 
-        assertEquals(emptyArray(), missingNode.asArray())
+        assertTrue(missingNode.asArray().isEmpty())
         assertEquals("", missingNode.asText())
         assertEquals(0, missingNode.asInt())
         assertEquals(0.toDouble(), missingNode.asDouble())
