@@ -1,6 +1,6 @@
 package snowesamosc.kotlinjsonparser.node
 
-internal class NumberNode(data: Number) : JsonNode {
+internal abstract class AbstractNode : JsonNode {
     override fun isArray(): Boolean {
         TODO("Not yet implemented")
     }

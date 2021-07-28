@@ -1,8 +1,8 @@
 package snowesamosc.kotlinjsonparser.node
 
-import snowesamosc.kotlinjsonparser.JsonValueNotFoundException
+import snowesamosc.kotlinjsonparser.JsonException
 
-object MissingNode : JsonNode {
+internal object MissingNode : JsonNode {
     override fun isArray(): Boolean = false
 
     override fun asArray(): Array<JsonNode> = emptyArray()
@@ -25,7 +25,7 @@ object MissingNode : JsonNode {
 
     override fun isNull(): Boolean = false
 
-    override fun get(key: String): JsonNode = throw JsonValueNotFoundException("\"$key\" is not exist")
+    override fun get(key: String): JsonNode = throw JsonException("\"$key\" is not exist")
 
     override fun find(key: String): JsonNode = MissingNode
 

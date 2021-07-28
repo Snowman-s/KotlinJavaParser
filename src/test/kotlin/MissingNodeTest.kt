@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import snowesamosc.kotlinjsonparser.JsonValueNotFoundException
+import snowesamosc.kotlinjsonparser.JsonException
 import snowesamosc.kotlinjsonparser.node.MissingNode
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -35,7 +35,7 @@ internal class MissingNodeTest {
     internal fun childTest() {
         val missingNode = MissingNode
 
-        assertThrows<JsonValueNotFoundException> { missingNode.get("hoge") }
+        assertThrows<JsonException> { missingNode.get("hoge") }
         assertEquals(MissingNode, missingNode.find("fuga"))
     }
 
