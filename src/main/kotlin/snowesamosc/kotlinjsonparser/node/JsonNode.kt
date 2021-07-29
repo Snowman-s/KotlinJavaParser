@@ -61,6 +61,11 @@ interface JsonNode {
     fun isNull(): Boolean
 
     /**
+     * このNodeが、objectのNodeであるかを返します。
+     */
+    fun isObject(): Boolean
+
+    /**
      * このNodeの、このkeyに対応する子が取得可能なら、その子を返します。
      *
      * @throws snowesamosc.kotlinjsonparser.JsonException keyに対応する子が存在しない場合。
