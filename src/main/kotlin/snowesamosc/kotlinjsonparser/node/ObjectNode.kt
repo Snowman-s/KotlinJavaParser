@@ -1,32 +1,49 @@
 package snowesamosc.kotlinjsonparser.node
 
+import snowesamosc.kotlinjsonparser.JsonException
+
 internal class ObjectNode(data: Map<String, JsonNode>) : AbstractNode() {
     constructor(builder: Builder) : this(builder.data)
 
+    private val map: Map<String, JsonNode> = data
+
     override fun get(key: String): JsonNode {
-        TODO("Not yet implemented")
+        return map[key] ?: throw JsonException("this node does not have \"$key\"")
     }
 
     override fun find(key: String): JsonNode {
-        TODO("Not yet implemented")
+        return map.getOrDefault(key, MissingNode)
     }
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+        val builder = StringBuilder("{")
+
+        map.onEachIndexed { index, entry ->
+            if (index != 0) {
+                builder.append(", ")
+            }
+            builder.append("\"").append(entry.key).append("\"").append(":").append(entry.value)
+        }
+
+        builder.append("}")
+
+        return builder.toString()
     }
 
     /**
      * ObjectNodeのビルダー
      */
     class Builder {
-        val data: Map<String, JsonNode> = HashMap()
+        var data: Map<String, JsonNode> = HashMap()
 
         fun append(key: String, child: JsonNode): Builder {
+            data = data.plus(Pair(key, child))
+
             return this
         }
 
         fun build(): ObjectNode {
-            return ObjectNode(emptyMap())
+            return ObjectNode(data)
         }
     }
 }

@@ -10,7 +10,7 @@ internal class ObjectNodeTest {
 
         val objectNode: ObjectNode =
             builder.append("child", TextNode("hoge"))
-                .build();
+                .build()
 
         assertEquals("hoge", objectNode.get("child").asText())
     }
