@@ -1,15 +1,24 @@
 package snowesamosc.kotlinjsonparser.node
 
 internal class ArrayNode(data: Array<JsonNode>) : AbstractNode() {
-    override fun isArray(): Boolean {
-        TODO("Not yet implemented")
-    }
+    private val array = data
 
-    override fun asArray(): Array<JsonNode> {
-        TODO("Not yet implemented")
-    }
+    override fun isArray(): Boolean = true
+
+    override fun asArray(): Array<JsonNode> = array
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+        val builder = StringBuilder("[")
+
+        for (i in array.indices) {
+            if (i != 0) {
+                builder.append(", ")
+            }
+            builder.append(array[i].toString())
+        }
+
+        builder.append("]")
+
+        return builder.toString()
     }
 }

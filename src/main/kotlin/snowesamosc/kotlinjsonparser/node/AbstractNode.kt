@@ -1,63 +1,33 @@
 package snowesamosc.kotlinjsonparser.node
 
+import snowesamosc.kotlinjsonparser.JsonException
+
 internal abstract class AbstractNode : JsonNode {
-    override fun isArray(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isArray(): Boolean = false
 
-    override fun asArray(): Array<JsonNode> {
-        TODO("Not yet implemented")
-    }
+    override fun asArray(): Array<JsonNode> = throw JsonException("this node is not array")
 
-    override fun isNumber(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isNumber(): Boolean = false
 
-    override fun isInt(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isInt(): Boolean = false
 
-    override fun asInt(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun asInt(): Int = throw JsonException("this node is not int")
 
-    override fun asDouble(): Double {
-        TODO("Not yet implemented")
-    }
+    override fun asNumber(): Number = throw JsonException("this node is not double")
 
-    override fun isBoolean(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isBoolean(): Boolean = false
 
-    override fun asBoolean(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun asBoolean(): Boolean = throw JsonException("this node is not boolean")
 
-    override fun isText(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isText(): Boolean = false
 
-    override fun asText(): String {
-        TODO("Not yet implemented")
-    }
+    override fun asText(): String = throw JsonException("this node is not text")
 
-    override fun isNull(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isNull(): Boolean = false
 
-    override fun get(key: String): JsonNode {
-        TODO("Not yet implemented")
-    }
+    override fun get(key: String): JsonNode = throw JsonException("this node does not have \"$key\"")
 
-    override fun find(key: String): JsonNode {
-        TODO("Not yet implemented")
-    }
+    override fun find(key: String): JsonNode = MissingNode
 
-    override fun isMissing(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun toString(): String {
-        TODO("Not yet implemented")
-    }
+    override fun isMissing(): Boolean = false
 }

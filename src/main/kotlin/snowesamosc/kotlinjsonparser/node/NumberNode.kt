@@ -1,63 +1,13 @@
 package snowesamosc.kotlinjsonparser.node
 
-internal class NumberNode(data: Number) : JsonNode {
-    override fun isArray(): Boolean {
-        TODO("Not yet implemented")
-    }
+internal class NumberNode(data: Number) : AbstractNode() {
+    private val number: Number = data
 
-    override fun asArray(): Array<JsonNode> {
-        TODO("Not yet implemented")
-    }
+    override fun isNumber(): Boolean = true
 
-    override fun isNumber(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun asNumber(): Number = number
 
-    override fun isInt(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun asInt(): Int = number.toInt()
 
-    override fun asInt(): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun asDouble(): Double {
-        TODO("Not yet implemented")
-    }
-
-    override fun isBoolean(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun asBoolean(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun isText(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun asText(): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun isNull(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun get(key: String): JsonNode {
-        TODO("Not yet implemented")
-    }
-
-    override fun find(key: String): JsonNode {
-        TODO("Not yet implemented")
-    }
-
-    override fun isMissing(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun toString(): String {
-        TODO("Not yet implemented")
-    }
+    override fun toString(): String = number.toString()
 }

@@ -1,15 +1,11 @@
 package snowesamosc.kotlinjsonparser.node
 
 internal class TextNode(data: String) : AbstractNode() {
-    override fun isText(): Boolean {
-        TODO("Not yet implemented")
-    }
+    private val text: String = data
 
-    override fun asText(): String {
-        TODO("Not yet implemented")
-    }
+    override fun isText(): Boolean = true
 
-    override fun toString(): String {
-        TODO("Not yet implemented")
-    }
+    override fun asText(): String = text
+
+    override fun toString(): String = "\"" + text + "\""
 }

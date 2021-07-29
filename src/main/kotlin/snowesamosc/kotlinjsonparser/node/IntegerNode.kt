@@ -1,15 +1,15 @@
 package snowesamosc.kotlinjsonparser.node
 
 internal class IntegerNode(data: Int) : AbstractNode() {
-    override fun isInt(): Boolean {
-        TODO("Not yet implemented")
-    }
+    private val int: Int = data
 
-    override fun asInt(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun isInt(): Boolean = true
 
-    override fun toString(): String {
-        TODO("Not yet implemented")
-    }
+    override fun asInt(): Int = int
+
+    override fun isNumber(): Boolean = true
+
+    override fun asNumber(): Number = int
+
+    override fun toString(): String = int.toString()
 }
