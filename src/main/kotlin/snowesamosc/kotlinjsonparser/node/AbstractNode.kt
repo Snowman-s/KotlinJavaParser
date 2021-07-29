@@ -25,6 +25,8 @@ internal abstract class AbstractNode : JsonNode {
 
     override fun isNull(): Boolean = false
 
+    override fun isObject(): Boolean = false
+
     override fun get(key: String): JsonNode = throw JsonException("this node does not have \"$key\"")
 
     override fun find(key: String): JsonNode = MissingNode
