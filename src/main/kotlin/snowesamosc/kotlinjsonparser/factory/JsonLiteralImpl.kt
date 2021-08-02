@@ -13,13 +13,9 @@ internal sealed class JsonLiteralImpl(
 
     override fun getChildren(): List<JsonLiteral> = children
 
-    override fun isJsonNode(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun isJsonNode(): Boolean = false
 
-    override fun asJsonNode(): JsonNode? {
-        TODO("Not yet implemented")
-    }
+    override fun asJsonNode(): JsonNode? = null
 
     override fun toString(): String {
         return getName() + if (hasChildren()) {
@@ -30,4 +26,32 @@ internal sealed class JsonLiteralImpl(
     }
 
     abstract fun getName(): String
+
+    internal class WS private constructor(
+        originalString: String
+    ) : JsonLiteralImpl(originalString, emptyList()) {
+        override fun getName(): String = "WS"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val nodeBuilder = StringBuilder()
+                val originalStringBuilder = StringBuilder(str)
+
+                CharLoop@
+                for (c in str) {
+                    when (c) {
+                        '\u0020', '\u0009', '\u000A', '\u000D' -> {
+                            nodeBuilder.append(c)
+                            originalStringBuilder.deleteCharAt(0)
+                        }
+                        else -> break@CharLoop
+                    }
+                }
+
+                val ws = if (nodeBuilder.isEmpty()) null else WS(nodeBuilder.toString())
+
+                return GreedyCreateResult(originalStringBuilder.toString(), ws)
+            }
+        }
+    }
 }
