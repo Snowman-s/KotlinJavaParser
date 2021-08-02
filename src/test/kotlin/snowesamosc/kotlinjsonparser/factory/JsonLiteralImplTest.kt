@@ -3,14 +3,14 @@ package snowesamosc.kotlinjsonparser.factory
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 internal class JsonLiteralImplTest {
     @Test
     internal fun wsCreateTest() {
         val result = JsonLiteralImpl.WS.greedyCreate("")
 
-        assertNull(result.literal)
+        assertNotNull(result.literal)
+        assertEquals("", result.literal.asString())
         assertEquals("", result.str)
 
         val result2 = JsonLiteralImpl.WS.greedyCreate(" \t\n ")

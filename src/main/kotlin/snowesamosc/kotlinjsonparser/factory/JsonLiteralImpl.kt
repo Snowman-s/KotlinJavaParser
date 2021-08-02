@@ -48,7 +48,7 @@ internal sealed class JsonLiteralImpl(
                     }
                 }
 
-                val ws = if (nodeBuilder.isEmpty()) null else WS(nodeBuilder.toString())
+                val ws = WS(nodeBuilder.toString())
 
                 return GreedyCreateResult(originalStringBuilder.toString(), ws)
             }
