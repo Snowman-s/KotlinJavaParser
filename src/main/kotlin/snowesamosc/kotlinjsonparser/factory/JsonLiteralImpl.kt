@@ -434,6 +434,43 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    internal class Int private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "Int"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                var remainString = str
+
+                val zeroResult = Zero.greedyCreate(remainString)
+                if (zeroResult.literal != null) {
+                    return GreedyCreateResult(zeroResult.remainString, Int(listOf(zeroResult.literal)))
+                }
+
+                val children: MutableList<JsonLiteral> = mutableListOf()
+
+                val firstDigitResult = Digit19.greedyCreate(remainString)
+                if (firstDigitResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(firstDigitResult.literal)
+                remainString = firstDigitResult.remainString
+
+                while (true) {
+                    val otherDigitResult = ABNFDigit.greedyCreate(remainString)
+                    if (otherDigitResult.literal == null) {
+                        break
+                    }
+                    children.add(otherDigitResult.literal)
+                    remainString = otherDigitResult.remainString
+                }
+
+                return GreedyCreateResult(remainString, Int(children))
+            }
+        }
+    }
+
     internal class Minus private constructor(
         private val originalString: String
     ) : JsonLiteralImpl(emptyList()) {

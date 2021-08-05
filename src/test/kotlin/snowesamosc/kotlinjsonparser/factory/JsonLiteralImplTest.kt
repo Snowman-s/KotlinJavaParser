@@ -339,6 +339,38 @@ internal class JsonLiteralImplTest {
         assertEquals(" .6 ", result4.remainString)
     }
 
+    @Test
+    internal fun intCreateTest() {
+        val result = JsonLiteralImpl.Int.greedyCreate("0")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf("0"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Int.greedyCreate("29e")
+
+        assertNotNull(result2.literal)
+        assertContentEquals(
+            listOf("2", "9"),
+            result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("e", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Int.greedyCreate("03")
+
+        assertNotNull(result3.literal)
+        assertContentEquals(
+            listOf("0"),
+            result3.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("3", result3.remainString)
+
+        val result4 = JsonLiteralImpl.Int.greedyCreate("A030")
+
+        assertNull(result4.literal)
+        assertEquals("A030", result4.remainString)
+    }
+
     private fun literalTest(
         literalCreator: (String) -> GreedyCreateResult,
         originalString: String,
