@@ -396,6 +396,44 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    internal class Frac private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "Frac"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val children: MutableList<JsonLiteral> = mutableListOf()
+                var remainString = str
+
+                val decimalPointResult = DecimalPoint.greedyCreate(remainString)
+                if (decimalPointResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(decimalPointResult.literal)
+                remainString = decimalPointResult.remainString
+
+                val firstDigitResult = ABNFDigit.greedyCreate(remainString)
+                if (firstDigitResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(firstDigitResult.literal)
+                remainString = firstDigitResult.remainString
+
+                while (true) {
+                    val otherDigitResult = ABNFDigit.greedyCreate(remainString)
+                    if (otherDigitResult.literal == null) {
+                        break
+                    }
+                    children.add(otherDigitResult.literal)
+                    remainString = otherDigitResult.remainString
+                }
+
+                return GreedyCreateResult(remainString, Frac(children))
+            }
+        }
+    }
+
     internal class Minus private constructor(
         private val originalString: String
     ) : JsonLiteralImpl(emptyList()) {

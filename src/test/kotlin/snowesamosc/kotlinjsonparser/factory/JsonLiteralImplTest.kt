@@ -310,6 +310,35 @@ internal class JsonLiteralImplTest {
         assertEquals("E-+24", result5.remainString)
     }
 
+    @Test
+    internal fun fracCreateTest() {
+        val result = JsonLiteralImpl.Frac.greedyCreate(".80")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf(".", "8", "0"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Frac.greedyCreate(".09e")
+
+        assertNotNull(result2.literal)
+        assertContentEquals(
+            listOf(".", "0", "9"),
+            result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("e", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Frac.greedyCreate(".-23-")
+
+        assertNull(result3.literal)
+        assertEquals(".-23-", result3.remainString)
+
+        val result4 = JsonLiteralImpl.Exp.greedyCreate(" .6 ")
+
+        assertNull(result4.literal)
+        assertEquals(" .6 ", result4.remainString)
+    }
+
     private fun literalTest(
         literalCreator: (String) -> GreedyCreateResult,
         originalString: String,
