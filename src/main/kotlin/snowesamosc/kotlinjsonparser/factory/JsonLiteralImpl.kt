@@ -47,7 +47,7 @@ internal sealed class JsonLiteralImpl(
     ) : JsonLiteralImpl(emptyList()) {
         override fun getName(): String = "WS"
 
-        override fun toString(): String = originalString
+        override fun asString(): String = originalString
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult {
@@ -55,10 +55,10 @@ internal sealed class JsonLiteralImpl(
                 val originalStringBuilder = StringBuilder(str)
 
                 CharLoop@
-                for (c in str) {
+                for (c in str.codePoints()) {
                     when (c) {
-                        '\u0020', '\u0009', '\u000A', '\u000D' -> {
-                            nodeBuilder.append(c)
+                        0x20, 0x09, 0x0A, 0x0D -> {
+                            nodeBuilder.appendCodePoint(c)
                             originalStringBuilder.deleteCharAt(0)
                         }
                         else -> break@CharLoop
@@ -68,6 +68,34 @@ internal sealed class JsonLiteralImpl(
                 val ws = WS(nodeBuilder.toString())
 
                 return GreedyCreateResult(originalStringBuilder.toString(), ws)
+            }
+        }
+    }
+
+    internal class BeginArray private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "BeginArray"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                var remainString = str
+
+                val ws1ResultSet = WS.greedyCreate(remainString)
+                val ws1 = ws1ResultSet.literal!!
+                remainString = ws1ResultSet.remainString
+
+                if (remainString.isEmpty() || remainString.codePointAt(0) != 0x5B) return GreedyCreateResult(str, null)
+                val text = ABNFString("\u005B")
+                remainString = remainString.substring(1)
+
+                val ws2ResultSet = WS.greedyCreate(remainString)
+                val ws2 = ws2ResultSet.literal!!
+                remainString = ws2ResultSet.remainString
+
+                val beginArray = BeginArray(listOf(ws1, text, ws2))
+
+                return GreedyCreateResult(remainString, beginArray)
             }
         }
     }
