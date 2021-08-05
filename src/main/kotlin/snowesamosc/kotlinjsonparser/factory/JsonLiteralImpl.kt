@@ -42,6 +42,36 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
     }
 
+    /**
+     * ABNFルール(RFC5234)のDIGITを表す。
+     */
+    internal class ABNFDigit private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "ABNFDigit"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val nodeStringBuilder = StringBuilder()
+                val originalStringBuilder = StringBuilder(str)
+
+                if (str.isEmpty()) return GreedyCreateResult(str, null)
+
+                val firstCodePoint = str.codePointAt(0)
+                originalStringBuilder.deleteAt(0)
+
+                if (firstCodePoint in 0x30..0x39) {
+                    nodeStringBuilder.appendCodePoint(firstCodePoint)
+                    return GreedyCreateResult(originalStringBuilder.toString(), ABNFDigit(nodeStringBuilder.toString()))
+                }
+
+                return GreedyCreateResult(str, null)
+            }
+        }
+    }
+
     internal class WS private constructor(
         private val originalString: String
     ) : JsonLiteralImpl(emptyList()) {
@@ -258,6 +288,33 @@ internal sealed class JsonLiteralImpl(
                 if (str.isEmpty() || str.codePointAt(0) != 0x2E) return GreedyCreateResult(str, null)
 
                 return GreedyCreateResult(str.removePrefix("."), DecimalPoint("."))
+            }
+        }
+    }
+
+    internal class Digit19 private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "Digit1_9"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val nodeStringBuilder = StringBuilder()
+                val originalStringBuilder = StringBuilder(str)
+
+                if (str.isEmpty()) return GreedyCreateResult(str, null)
+
+                val firstCodePoint = str.codePointAt(0)
+                originalStringBuilder.deleteAt(0)
+
+                if (firstCodePoint in 0x31..0x39) {
+                    nodeStringBuilder.appendCodePoint(firstCodePoint)
+                    return GreedyCreateResult(originalStringBuilder.toString(), Digit19(nodeStringBuilder.toString()))
+                }
+
+                return GreedyCreateResult(str, null)
             }
         }
     }

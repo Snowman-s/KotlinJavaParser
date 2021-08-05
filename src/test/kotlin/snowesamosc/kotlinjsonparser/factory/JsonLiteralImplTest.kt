@@ -183,7 +183,7 @@ internal class JsonLiteralImplTest {
         assertEquals("0", result.literal.asString())
         assertEquals("", result.remainString)
 
-        val result2 = JsonLiteralImpl.Plus.greedyCreate(" 0")
+        val result2 = JsonLiteralImpl.Zero.greedyCreate(" 0")
 
         assertNull(result2.literal)
         assertEquals(" 0", result2.remainString)
@@ -193,6 +193,56 @@ internal class JsonLiteralImplTest {
         assertNotNull(result3.literal)
         assertEquals("0", result3.literal.asString())
         assertEquals("00", result3.remainString)
+    }
+
+    @Test
+    internal fun abnfDigitCreateTest() {
+        val result = JsonLiteralImpl.ABNFDigit.greedyCreate("5")
+
+        assertNotNull(result.literal)
+        assertEquals("5", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.ABNFDigit.greedyCreate(" 9")
+
+        assertNull(result2.literal)
+        assertEquals(" 9", result2.remainString)
+
+        val result3 = JsonLiteralImpl.ABNFDigit.greedyCreate("842")
+
+        assertNotNull(result3.literal)
+        assertEquals("8", result3.literal.asString())
+        assertEquals("42", result3.remainString)
+
+        val result4 = JsonLiteralImpl.ABNFDigit.greedyCreate("0")
+
+        assertNotNull(result4.literal)
+        assertEquals("0", result4.literal.asString())
+    }
+
+    @Test
+    internal fun digit19CreateTest() {
+        val result = JsonLiteralImpl.Digit19.greedyCreate("5")
+
+        assertNotNull(result.literal)
+        assertEquals("5", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Digit19.greedyCreate(" 9")
+
+        assertNull(result2.literal)
+        assertEquals(" 9", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Digit19.greedyCreate("842")
+
+        assertNotNull(result3.literal)
+        assertEquals("8", result3.literal.asString())
+        assertEquals("42", result3.remainString)
+
+        val result4 = JsonLiteralImpl.ABNFDigit.greedyCreate("0")
+
+        assertNull(result3.literal)
+        assertEquals("0", result4.remainString)
     }
 
     private fun literalTest(
