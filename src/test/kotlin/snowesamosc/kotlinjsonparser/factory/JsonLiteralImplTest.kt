@@ -115,6 +115,86 @@ internal class JsonLiteralImplTest {
         assertEquals("e", result3.remainString)
     }
 
+    @Test
+    internal fun decimalPointCreateTest() {
+        val result = JsonLiteralImpl.DecimalPoint.greedyCreate(".")
+
+        assertNotNull(result.literal)
+        assertEquals(".", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.DecimalPoint.greedyCreate(" .")
+
+        assertNull(result2.literal)
+        assertEquals(" .", result2.remainString)
+
+        val result3 = JsonLiteralImpl.DecimalPoint.greedyCreate("...")
+
+        assertNotNull(result3.literal)
+        assertEquals(".", result3.literal.asString())
+        assertEquals("..", result3.remainString)
+    }
+
+    @Test
+    internal fun minusCreateTest() {
+        val result = JsonLiteralImpl.Minus.greedyCreate("-")
+
+        assertNotNull(result.literal)
+        assertEquals("-", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Minus.greedyCreate(" -")
+
+        assertNull(result2.literal)
+        assertEquals(" -", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Minus.greedyCreate("---")
+
+        assertNotNull(result3.literal)
+        assertEquals("-", result3.literal.asString())
+        assertEquals("--", result3.remainString)
+    }
+
+    @Test
+    internal fun plusCreateTest() {
+        val result = JsonLiteralImpl.Plus.greedyCreate("+")
+
+        assertNotNull(result.literal)
+        assertEquals("+", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Plus.greedyCreate(" +")
+
+        assertNull(result2.literal)
+        assertEquals(" +", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Plus.greedyCreate("+++")
+
+        assertNotNull(result3.literal)
+        assertEquals("+", result3.literal.asString())
+        assertEquals("++", result3.remainString)
+    }
+
+    @Test
+    internal fun zeroCreateTest() {
+        val result = JsonLiteralImpl.Zero.greedyCreate("0")
+
+        assertNotNull(result.literal)
+        assertEquals("0", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Plus.greedyCreate(" 0")
+
+        assertNull(result2.literal)
+        assertEquals(" 0", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Zero.greedyCreate("000")
+
+        assertNotNull(result3.literal)
+        assertEquals("0", result3.literal.asString())
+        assertEquals("00", result3.remainString)
+    }
+
     private fun literalTest(
         literalCreator: (String) -> GreedyCreateResult,
         originalString: String,

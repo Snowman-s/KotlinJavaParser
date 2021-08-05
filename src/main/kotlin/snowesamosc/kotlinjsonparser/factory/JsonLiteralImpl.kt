@@ -245,6 +245,71 @@ internal sealed class JsonLiteralImpl(
             }
         }
     }
+
+    internal class DecimalPoint private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "DecimalPoint"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                if (str.isEmpty() || str.codePointAt(0) != 0x2E) return GreedyCreateResult(str, null)
+
+                return GreedyCreateResult(str.removePrefix("."), DecimalPoint("."))
+            }
+        }
+    }
+
+    internal class Minus private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "Minus"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                if (str.isEmpty() || str.codePointAt(0) != 0x2D) return GreedyCreateResult(str, null)
+
+                return GreedyCreateResult(str.removePrefix("-"), Minus("-"))
+            }
+        }
+    }
+
+    internal class Plus private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "Plus"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                if (str.isEmpty() || str.codePointAt(0) != 0x2B) return GreedyCreateResult(str, null)
+
+                return GreedyCreateResult(str.removePrefix("+"), Plus("+"))
+            }
+        }
+    }
+
+    internal class Zero private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "Zero"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                if (str.isEmpty() || str.codePointAt(0) != 0x30) return GreedyCreateResult(str, null)
+
+                return GreedyCreateResult(str.removePrefix("0"), Zero("0"))
+            }
+        }
+    }
+
 }
 
 /**
