@@ -79,24 +79,38 @@ internal sealed class JsonLiteralImpl(
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult {
-                var remainString = str
+                val pair = separateOneCharLiteral(str, 0x5B)
+                val children = pair.first
+                val remain = pair.second
 
-                val ws1ResultSet = WS.greedyCreate(remainString)
-                val ws1 = ws1ResultSet.literal!!
-                remainString = ws1ResultSet.remainString
+                if (children.isEmpty()) return GreedyCreateResult(str, null)
+                val beginArray = BeginArray(children)
 
-                if (remainString.isEmpty() || remainString.codePointAt(0) != 0x5B) return GreedyCreateResult(str, null)
-                val text = ABNFString("\u005B")
-                remainString = remainString.substring(1)
-
-                val ws2ResultSet = WS.greedyCreate(remainString)
-                val ws2 = ws2ResultSet.literal!!
-                remainString = ws2ResultSet.remainString
-
-                val beginArray = BeginArray(listOf(ws1, text, ws2))
-
-                return GreedyCreateResult(remainString, beginArray)
+                return GreedyCreateResult(remain, beginArray)
             }
         }
     }
+}
+
+/**
+ * 一文字のみを持つリテラル(begin-array等)のために、与えられた文字列を分割する。
+ *
+ * @return 分割されたchildrenのリストと、残りの文字列。
+ */
+internal fun separateOneCharLiteral(str: String, theCodePoint: Int): Pair<List<JsonLiteral>, String> {
+    var remainString = str
+
+    val ws1ResultSet = JsonLiteralImpl.WS.greedyCreate(remainString)
+    val ws1 = ws1ResultSet.literal!!
+    remainString = ws1ResultSet.remainString
+
+    if (remainString.isEmpty() || remainString.codePointAt(0) != theCodePoint) return Pair(emptyList(), str)
+    val text = JsonLiteralImpl.ABNFString(StringBuilder().appendCodePoint(theCodePoint).toString())
+    remainString = remainString.substring(1)
+
+    val ws2ResultSet = JsonLiteralImpl.WS.greedyCreate(remainString)
+    val ws2 = ws2ResultSet.literal!!
+    remainString = ws2ResultSet.remainString
+
+    return Pair(listOf(ws1, text, ws2), remainString)
 }
