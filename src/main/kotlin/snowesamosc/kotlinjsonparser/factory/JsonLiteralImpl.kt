@@ -90,6 +90,101 @@ internal sealed class JsonLiteralImpl(
             }
         }
     }
+
+    internal class BeginObject private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "BeginObject"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val pair = separateOneCharLiteral(str, 0x7B)
+                val children = pair.first
+                val remain = pair.second
+
+                if (children.isEmpty()) return GreedyCreateResult(str, null)
+                val beginObject = BeginObject(children)
+
+                return GreedyCreateResult(remain, beginObject)
+            }
+        }
+    }
+
+    internal class EndArray private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "EndArray"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val pair = separateOneCharLiteral(str, 0x5D)
+                val children = pair.first
+                val remain = pair.second
+
+                if (children.isEmpty()) return GreedyCreateResult(str, null)
+                val endArray = EndArray(children)
+
+                return GreedyCreateResult(remain, endArray)
+            }
+        }
+    }
+
+    internal class EndObject private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "EndObject"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val pair = separateOneCharLiteral(str, 0x7D)
+                val children = pair.first
+                val remain = pair.second
+
+                if (children.isEmpty()) return GreedyCreateResult(str, null)
+                val endObject = EndObject(children)
+
+                return GreedyCreateResult(remain, endObject)
+            }
+        }
+    }
+
+    internal class NameSeparator private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "NameSeparator"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val pair = separateOneCharLiteral(str, 0x3A)
+                val children = pair.first
+                val remain = pair.second
+
+                if (children.isEmpty()) return GreedyCreateResult(str, null)
+                val nameSeparator = NameSeparator(children)
+
+                return GreedyCreateResult(remain, nameSeparator)
+            }
+        }
+    }
+
+    internal class ValueSeparator private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "ValueSeparator"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val pair = separateOneCharLiteral(str, 0x2C)
+                val children = pair.first
+                val remain = pair.second
+
+                if (children.isEmpty()) return GreedyCreateResult(str, null)
+                val valueSeparator = ValueSeparator(children)
+
+                return GreedyCreateResult(remain, valueSeparator)
+            }
+        }
+    }
 }
 
 /**

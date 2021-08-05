@@ -30,17 +30,54 @@ internal class JsonLiteralImplTest {
 
     @Test
     internal fun beginArrayCreateTest() {
-        literalTest("[", listOf("", "[", ""), "")
-        literalTest(" \t\n[ \n", listOf(" \t\n", "[", " \n"), "")
-        literalTest(" \t[Hoge [\n ", listOf(" \t", "[", ""), "Hoge [\n ")
+        oneCharLiteralTest('[') { JsonLiteralImpl.BeginArray.greedyCreate(it) }
     }
 
-    private fun literalTest(originalString: String, childrenStrList: List<String>, remain: String) {
-        val result = JsonLiteralImpl.BeginArray.greedyCreate(originalString)
+    @Test
+    internal fun beginObjectCreateTest() {
+        oneCharLiteralTest('{') { JsonLiteralImpl.BeginObject.greedyCreate(it) }
+    }
+
+    @Test
+    internal fun endArrayCreateTest() {
+        oneCharLiteralTest(']') { JsonLiteralImpl.EndArray.greedyCreate(it) }
+    }
+
+    @Test
+    internal fun endObjectCreateTest() {
+        oneCharLiteralTest('}') { JsonLiteralImpl.EndObject.greedyCreate(it) }
+    }
+
+    @Test
+    internal fun nameSeparatorCreateTest() {
+        oneCharLiteralTest(':') { JsonLiteralImpl.NameSeparator.greedyCreate(it) }
+    }
+
+    @Test
+    internal fun valueSeparatorCreateTest() {
+        oneCharLiteralTest(',') { JsonLiteralImpl.ValueSeparator.greedyCreate(it) }
+    }
+
+    private fun literalTest(
+        literalCreator: (String) -> GreedyCreateResult,
+        originalString: String,
+        childrenStrList: List<String>,
+        remain: String
+    ) {
+        val result = literalCreator(originalString)
         assertNotNull(result.literal)
         assertTrue { result.literal.hasChildren() }
         assertContentEquals(childrenStrList,
             result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
         assertEquals(remain, result.remainString)
+    }
+
+    private fun oneCharLiteralTest(
+        theChar: Char,
+        literalCreator: (String) -> GreedyCreateResult
+    ) {
+        literalTest(literalCreator, theChar.toString(), listOf("", theChar.toString(), ""), "")
+        literalTest(literalCreator, " \t\n$theChar \n", listOf(" \t\n", theChar.toString(), " \n"), "")
+        literalTest(literalCreator, " \t" + theChar + "Hoge [\n ", listOf(" \t", theChar.toString(), ""), "Hoge [\n ")
     }
 }
