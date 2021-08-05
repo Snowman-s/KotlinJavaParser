@@ -185,6 +185,66 @@ internal sealed class JsonLiteralImpl(
             }
         }
     }
+
+    internal class False private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "False"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val falseString = "\u0066\u0061\u006c\u0073\u0065"
+
+                if (!str.startsWith(falseString)) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                return GreedyCreateResult(str.removePrefix(falseString), False(falseString))
+            }
+        }
+    }
+
+    internal class Null private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "Null"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val nullString = "\u006e\u0075\u006c\u006c"
+
+                if (!str.startsWith(nullString)) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                return GreedyCreateResult(str.removePrefix(nullString), Null(nullString))
+            }
+        }
+    }
+
+    internal class True private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "True"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val trueString = "\u0074\u0072\u0075\u0065"
+
+                if (!str.startsWith(trueString)) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                return GreedyCreateResult(str.removePrefix(trueString), True(trueString))
+            }
+        }
+    }
 }
 
 /**

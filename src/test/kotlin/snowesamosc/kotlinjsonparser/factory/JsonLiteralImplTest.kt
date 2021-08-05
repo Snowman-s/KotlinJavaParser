@@ -1,10 +1,7 @@
 package snowesamosc.kotlinjsonparser.factory
 
 import org.junit.jupiter.api.Test
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal class JsonLiteralImplTest {
     @Test
@@ -56,6 +53,66 @@ internal class JsonLiteralImplTest {
     @Test
     internal fun valueSeparatorCreateTest() {
         oneCharLiteralTest(',') { JsonLiteralImpl.ValueSeparator.greedyCreate(it) }
+    }
+
+    @Test
+    internal fun falseCreateTest() {
+        val result = JsonLiteralImpl.False.greedyCreate("false")
+
+        assertNotNull(result.literal)
+        assertEquals("false", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.False.greedyCreate(" false")
+
+        assertNull(result2.literal)
+        assertEquals(" false", result2.remainString)
+
+        val result3 = JsonLiteralImpl.False.greedyCreate("falsee")
+
+        assertNotNull(result3.literal)
+        assertEquals("false", result3.literal.asString())
+        assertEquals("e", result3.remainString)
+    }
+
+    @Test
+    internal fun nullCreateTest() {
+        val result = JsonLiteralImpl.Null.greedyCreate("null")
+
+        assertNotNull(result.literal)
+        assertEquals("null", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Null.greedyCreate(" null")
+
+        assertNull(result2.literal)
+        assertEquals(" null", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Null.greedyCreate("nulll")
+
+        assertNotNull(result3.literal)
+        assertEquals("null", result3.literal.asString())
+        assertEquals("l", result3.remainString)
+    }
+
+    @Test
+    internal fun trueCreateTest() {
+        val result = JsonLiteralImpl.True.greedyCreate("true")
+
+        assertNotNull(result.literal)
+        assertEquals("true", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.True.greedyCreate(" true")
+
+        assertNull(result2.literal)
+        assertEquals(" true", result2.remainString)
+
+        val result3 = JsonLiteralImpl.True.greedyCreate("truee")
+
+        assertNotNull(result3.literal)
+        assertEquals("true", result3.literal.asString())
+        assertEquals("e", result3.remainString)
     }
 
     private fun literalTest(
