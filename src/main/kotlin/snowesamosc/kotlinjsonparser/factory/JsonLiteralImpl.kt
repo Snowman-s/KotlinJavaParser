@@ -319,6 +319,33 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    internal class E private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "E"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val nodeStringBuilder = StringBuilder()
+                val originalStringBuilder = StringBuilder(str)
+
+                if (str.isEmpty()) return GreedyCreateResult(str, null)
+
+                val firstCodePoint = str.codePointAt(0)
+                originalStringBuilder.deleteAt(0)
+
+                if (firstCodePoint == 0x45 || firstCodePoint == 0x65) {
+                    nodeStringBuilder.appendCodePoint(firstCodePoint)
+                    return GreedyCreateResult(originalStringBuilder.toString(), E(nodeStringBuilder.toString()))
+                }
+
+                return GreedyCreateResult(str, null)
+            }
+        }
+    }
+
     internal class Minus private constructor(
         private val originalString: String
     ) : JsonLiteralImpl(emptyList()) {
