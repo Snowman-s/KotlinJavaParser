@@ -116,6 +116,47 @@ internal class JsonLiteralImplTest {
     }
 
     @Test
+    internal fun numberCreateTest() {
+        val result = JsonLiteralImpl.Number.greedyCreate("-80.3e6")
+
+        assertNotNull(result.literal)
+
+        assertContentEquals(
+            listOf("-", "80", ".3", "e6"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Number.greedyCreate("30.3e")
+
+        assertNotNull(result2.literal)
+        assertContentEquals(
+            listOf("30", ".3"),
+            result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("e", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Number.greedyCreate("-6e98.")
+
+        assertNotNull(result3.literal)
+        assertContentEquals(
+            listOf("-", "6", "e98"),
+            result3.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals(".", result3.remainString)
+
+        val result4 = JsonLiteralImpl.Number.greedyCreate("-0")
+
+        assertNotNull(result4.literal)
+        assertContentEquals(
+            listOf("-", "0"),
+            result4.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result4.remainString)
+
+        val result5 = JsonLiteralImpl.Number.greedyCreate("-.")
+
+        assertNull(result5.literal)
+        assertEquals("-.", result5.remainString)
+    }
+
+    @Test
     internal fun decimalPointCreateTest() {
         val result = JsonLiteralImpl.DecimalPoint.greedyCreate(".")
 

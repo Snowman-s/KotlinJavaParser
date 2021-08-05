@@ -10,7 +10,7 @@ internal sealed class JsonLiteralImpl(
      * このオブジェクトの文字列表現
      */
     override fun asString(): String {
-        return children.joinToString { asString() }
+        return children.joinToString(separator = "") { it.asString() }
     }
 
     override fun hasChildren(): Boolean = children.isNotEmpty()
@@ -272,6 +272,46 @@ internal sealed class JsonLiteralImpl(
                 }
 
                 return GreedyCreateResult(str.removePrefix(trueString), True(trueString))
+            }
+        }
+    }
+
+    internal class Number private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "Number"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val children: MutableList<JsonLiteral> = mutableListOf()
+                var remainString = str
+
+                val minusResult = Minus.greedyCreate(remainString)
+                if (minusResult.literal != null) {
+                    children.add(minusResult.literal)
+                    remainString = minusResult.remainString
+                }
+
+                val intResult = Int.greedyCreate(remainString)
+                if (intResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(intResult.literal)
+                remainString = intResult.remainString
+
+                val fracResult = Frac.greedyCreate(remainString)
+                if (fracResult.literal != null) {
+                    children.add(fracResult.literal)
+                    remainString = fracResult.remainString
+                }
+
+                val expResult = Exp.greedyCreate(remainString)
+                if (expResult.literal != null) {
+                    children.add(expResult.literal)
+                    remainString = expResult.remainString
+                }
+
+                return GreedyCreateResult(remainString, Number(children))
             }
         }
     }
