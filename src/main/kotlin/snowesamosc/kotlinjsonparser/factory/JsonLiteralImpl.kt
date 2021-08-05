@@ -346,6 +346,56 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    internal class Exp private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "Exp"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val children: MutableList<JsonLiteral> = mutableListOf()
+                var remainString = str
+
+                val eResult = E.greedyCreate(remainString)
+                if (eResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(eResult.literal)
+                remainString = eResult.remainString
+
+                val minusResult = Minus.greedyCreate(remainString)
+                if (minusResult.literal != null) {
+                    children.add(minusResult.literal)
+                    remainString = minusResult.remainString
+                } else {
+                    val plusResult = Plus.greedyCreate(remainString)
+                    if (plusResult.literal != null) {
+                        children.add(plusResult.literal)
+                        remainString = plusResult.remainString
+                    }
+                }
+
+                val firstDigitResult = ABNFDigit.greedyCreate(remainString)
+                if (firstDigitResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(firstDigitResult.literal)
+                remainString = firstDigitResult.remainString
+
+                while (true) {
+                    val otherDigitResult = ABNFDigit.greedyCreate(remainString)
+                    if (otherDigitResult.literal == null) {
+                        break
+                    }
+                    children.add(otherDigitResult.literal)
+                    remainString = otherDigitResult.remainString
+                }
+
+                return GreedyCreateResult(remainString, Exp(children))
+            }
+        }
+    }
+
     internal class Minus private constructor(
         private val originalString: String
     ) : JsonLiteralImpl(emptyList()) {

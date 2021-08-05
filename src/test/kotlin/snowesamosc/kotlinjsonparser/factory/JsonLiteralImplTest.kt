@@ -270,6 +270,46 @@ internal class JsonLiteralImplTest {
         assertEquals("f", result4.remainString)
     }
 
+    @Test
+    internal fun expCreateTest() {
+        val result = JsonLiteralImpl.Exp.greedyCreate("e80")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf("e", "8", "0"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Exp.greedyCreate("E09e")
+
+        assertNotNull(result2.literal)
+        assertContentEquals(
+            listOf("E", "0", "9"),
+            result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("e", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Exp.greedyCreate("E-23-")
+
+        assertNotNull(result3.literal)
+        assertContentEquals(
+            listOf("E", "-", "2", "3"),
+            result3.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("-", result3.remainString)
+
+        val result4 = JsonLiteralImpl.Exp.greedyCreate("E+24 ")
+
+        assertNotNull(result4.literal)
+        assertContentEquals(
+            listOf("E", "+", "2", "4"),
+            result4.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals(" ", result4.remainString)
+
+        val result5 = JsonLiteralImpl.Exp.greedyCreate("E-+24")
+
+        assertNull(result5.literal)
+        assertEquals("E-+24", result5.remainString)
+    }
+
     private fun literalTest(
         literalCreator: (String) -> GreedyCreateResult,
         originalString: String,
