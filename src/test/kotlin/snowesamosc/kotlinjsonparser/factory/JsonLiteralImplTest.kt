@@ -30,24 +30,17 @@ internal class JsonLiteralImplTest {
 
     @Test
     internal fun beginArrayCreateTest() {
-        val result = JsonLiteralImpl.BeginArray.greedyCreate("[")
+        literalTest("[", listOf("", "[", ""), "")
+        literalTest(" \t\n[ \n", listOf(" \t\n", "[", " \n"), "")
+        literalTest(" \t[Hoge [\n ", listOf(" \t", "[", ""), "Hoge [\n ")
+    }
 
+    private fun literalTest(originalString: String, childrenStrList: List<String>, remain: String) {
+        val result = JsonLiteralImpl.BeginArray.greedyCreate(originalString)
         assertNotNull(result.literal)
         assertTrue { result.literal.hasChildren() }
-        assertContentEquals(listOf("", "[", ""), result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
-        assertEquals("", result.remainString)
-
-        val result2 = JsonLiteralImpl.BeginArray.greedyCreate(" \t\n[ \n")
-
-        assertNotNull(result2.literal)
-        assertContentEquals(listOf(" \t\n", "[", " \n"),
-            result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
-        assertEquals("", result2.remainString)
-
-        val result3 = JsonLiteralImpl.BeginArray.greedyCreate(" \t[Hoge [\n ")
-        assertNotNull(result3.literal)
-        assertContentEquals(listOf(" \t", "[", ""),
-            result3.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
-        assertEquals("Hoge [\n ", result3.remainString)
+        assertContentEquals(childrenStrList,
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals(remain, result.remainString)
     }
 }
