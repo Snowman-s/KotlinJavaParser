@@ -3,17 +3,14 @@ package snowesamosc.kotlinjsonparser.factory
 import snowesamosc.kotlinjsonparser.node.JsonNode
 
 internal sealed class JsonLiteralImpl(
-    private val children: List<JsonLiteral>,
-    /**
-     * 子が存在しない際に文字列表現で使用するテキスト
-     */
-    private val originalString: String? = null
+    private val children: List<JsonLiteral>
 ) : JsonLiteral {
 
+    /**
+     * このオブジェクトの文字列表現
+     */
     override fun asString(): String {
-        return if (hasChildren()) {
-            children.joinToString { asString() }
-        } else originalString.toString()
+        return children.joinToString { asString() }
     }
 
     override fun hasChildren(): Boolean = children.isNotEmpty()
@@ -39,15 +36,18 @@ internal sealed class JsonLiteralImpl(
      *
      * 他のJSONリテラルの子として使用するが、そのリテラルが文字列のみなら使用しない。
      */
-    internal class ABNFString(originalString: String)
-        : JsonLiteralImpl(emptyList(), originalString) {
+    internal class ABNFString(private val originalString: String) : JsonLiteralImpl(emptyList()) {
         override fun getName(): String = "ABNFString"
+
+        override fun asString(): String = originalString
     }
 
     internal class WS private constructor(
-        originalString: String
-    ) : JsonLiteralImpl(emptyList(), originalString) {
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
         override fun getName(): String = "WS"
+
+        override fun toString(): String = originalString
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult {
