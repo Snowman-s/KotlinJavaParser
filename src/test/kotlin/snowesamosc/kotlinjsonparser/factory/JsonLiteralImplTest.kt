@@ -444,6 +444,46 @@ internal class JsonLiteralImplTest {
         assertEquals("A030", result4.remainString)
     }
 
+    @Test
+    internal fun escapeCreateTest() {
+        val result = JsonLiteralImpl.Escape.greedyCreate("\\")
+
+        assertNotNull(result.literal)
+        assertEquals("\\", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Escape.greedyCreate(" \\")
+
+        assertNull(result2.literal)
+        assertEquals(" \\", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Escape.greedyCreate("\\\\\\")
+
+        assertNotNull(result3.literal)
+        assertEquals("\\", result3.literal.asString())
+        assertEquals("\\\\", result3.remainString)
+    }
+
+    @Test
+    internal fun quotationMarkCreateTest() {
+        val result = JsonLiteralImpl.QuotationMark.greedyCreate("\"")
+
+        assertNotNull(result.literal)
+        assertEquals("\"", result.literal.asString())
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.QuotationMark.greedyCreate(" \"")
+
+        assertNull(result2.literal)
+        assertEquals(" \"", result2.remainString)
+
+        val result3 = JsonLiteralImpl.QuotationMark.greedyCreate("\"\"\"")
+
+        assertNotNull(result3.literal)
+        assertEquals("\"", result3.literal.asString())
+        assertEquals("\"\"", result3.remainString)
+    }
+
     private fun literalTest(
         literalCreator: (String) -> GreedyCreateResult,
         originalString: String,

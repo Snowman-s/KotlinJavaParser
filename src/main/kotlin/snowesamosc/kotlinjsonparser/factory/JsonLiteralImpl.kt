@@ -595,6 +595,59 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    internal class Escape private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "Escape"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val nodeStringBuilder = StringBuilder()
+                val originalStringBuilder = StringBuilder(str)
+
+                if (str.isEmpty()) return GreedyCreateResult(str, null)
+
+                val firstCodePoint = str.codePointAt(0)
+                originalStringBuilder.deleteAt(0)
+
+                if (firstCodePoint == 0x5C) {
+                    nodeStringBuilder.appendCodePoint(firstCodePoint)
+                    return GreedyCreateResult(originalStringBuilder.toString(), Escape(nodeStringBuilder.toString()))
+                }
+
+                return GreedyCreateResult(str, null)
+            }
+        }
+    }
+
+    internal class QuotationMark private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "QuotationMark"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val nodeStringBuilder = StringBuilder()
+                val originalStringBuilder = StringBuilder(str)
+
+                if (str.isEmpty()) return GreedyCreateResult(str, null)
+
+                val firstCodePoint = str.codePointAt(0)
+                originalStringBuilder.deleteAt(0)
+
+                if (firstCodePoint == 0x22) {
+                    nodeStringBuilder.appendCodePoint(firstCodePoint)
+                    return GreedyCreateResult(originalStringBuilder.toString(), QuotationMark(nodeStringBuilder.toString()))
+                }
+
+                return GreedyCreateResult(str, null)
+            }
+        }
+    }
 }
 
 /**
