@@ -32,7 +32,7 @@ internal sealed class JsonLiteralImpl(
     abstract fun getName(): String
 
     /**
-     * ABNFルール(RFC5234)に則った、%表記での文字列を表す。
+     * ABNFルール(RFC5234)に則った、%表記またはダブルクォートで囲まれた文字列を表す。
      *
      * 他のJSONリテラルの子として使用するが、そのリテラルが文字列のみなら使用しない。
      */
@@ -598,7 +598,7 @@ internal sealed class JsonLiteralImpl(
 }
 
 /**
- * 一文字のみを持つリテラル(begin-array等)のために、与えられた文字列を分割する。
+ * 一文字のみを持つ "the six structural characters" (begin-array等)のために、与えられた文字列を分割する。
  *
  * @return 分割されたchildrenのリストと、残りの文字列。
  */
