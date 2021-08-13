@@ -72,6 +72,42 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    /**
+     * ABNFルール(RFC5234)のHEXDIGを表す。
+     */
+    internal class ABNFHexDig private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "ABNFHexDig"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val abnfDigitResult = ABNFDigit.greedyCreate(str)
+                if (abnfDigitResult.literal != null) {
+                    return GreedyCreateResult(abnfDigitResult.remainString, ABNFHexDig(listOf(abnfDigitResult.literal)))
+                }
+
+                val originalStringBuilder = StringBuilder(str)
+
+                if (str.isEmpty()) return GreedyCreateResult(str, null)
+
+                val firstCodePoint = str.codePointAt(0)
+                originalStringBuilder.deleteAt(0)
+
+                if (listOf('a', 'b', 'c', 'd', 'e', 'f').any {
+                        it.code == firstCodePoint || it.uppercaseChar().code == firstCodePoint
+                    }) {
+                    return GreedyCreateResult(
+                        originalStringBuilder.toString(),
+                        ABNFHexDig(listOf(ABNFString(firstCodePoint.codeToStr())))
+                    )
+                }
+
+                return GreedyCreateResult(str, null)
+            }
+        }
+    }
+
     internal class WS private constructor(
         private val originalString: String
     ) : JsonLiteralImpl(emptyList()) {
@@ -574,7 +610,7 @@ internal fun separateOneCharLiteral(str: String, theCodePoint: Int): Pair<List<J
     remainString = ws1ResultSet.remainString
 
     if (remainString.isEmpty() || remainString.codePointAt(0) != theCodePoint) return Pair(emptyList(), str)
-    val text = JsonLiteralImpl.ABNFString(StringBuilder().appendCodePoint(theCodePoint).toString())
+    val text = JsonLiteralImpl.ABNFString(theCodePoint.codeToStr())
     remainString = remainString.substring(1)
 
     val ws2ResultSet = JsonLiteralImpl.WS.greedyCreate(remainString)
@@ -583,3 +619,5 @@ internal fun separateOneCharLiteral(str: String, theCodePoint: Int): Pair<List<J
 
     return Pair(listOf(ws1, text, ws2), remainString)
 }
+
+internal fun Int.codeToStr() = StringBuilder().appendCodePoint(this).toString()

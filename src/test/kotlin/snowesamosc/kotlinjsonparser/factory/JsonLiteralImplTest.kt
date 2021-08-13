@@ -237,6 +237,38 @@ internal class JsonLiteralImplTest {
     }
 
     @Test
+    internal fun abnfHexDigCreateTest() {
+        val result = JsonLiteralImpl.ABNFHexDig.greedyCreate("5")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf("5"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.ABNFHexDig.greedyCreate("A")
+
+        assertNotNull(result2.literal)
+        assertContentEquals(
+            listOf("A"),
+            result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result2.remainString)
+
+        val result3 = JsonLiteralImpl.ABNFHexDig.greedyCreate("f")
+
+        assertNotNull(result3.literal)
+        assertContentEquals(
+            listOf("f"),
+            result3.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result3.remainString)
+
+        val result4 = JsonLiteralImpl.ABNFHexDig.greedyCreate("g")
+
+        assertNull(result4.literal)
+        assertEquals("g", result4.remainString)
+    }
+
+    @Test
     internal fun abnfDigitCreateTest() {
         val result = JsonLiteralImpl.ABNFDigit.greedyCreate("5")
 
