@@ -595,6 +595,47 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    internal class JString private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "JString"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                var remainString = str
+                val children: MutableList<JsonLiteral> = mutableListOf()
+
+                val quotationMarkResult1 = QuotationMark.greedyCreate(remainString)
+                if (quotationMarkResult1.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(quotationMarkResult1.literal)
+                remainString = quotationMarkResult1.remainString
+
+                while (true) {
+                    val jCharResult = JChar.greedyCreate(remainString)
+                    if (jCharResult.literal == null) {
+                        break
+                    }
+
+                    children.add(jCharResult.literal)
+                    remainString = jCharResult.remainString
+                }
+
+                val quotationMarkResult2 = QuotationMark.greedyCreate(remainString)
+                if (quotationMarkResult2.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(quotationMarkResult2.literal)
+                remainString = quotationMarkResult2.remainString
+
+                return GreedyCreateResult(remainString, JString(children))
+            }
+        }
+    }
+
     internal class JChar private constructor(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
@@ -717,6 +758,8 @@ internal sealed class JsonLiteralImpl(
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult {
                 val originalStringBuilder = StringBuilder(str)
+
+                if(str.isEmpty()) return GreedyCreateResult(str, null)
 
                 val firstCodePoint = str.codePointAt(0)
                 originalStringBuilder.deleteAt(0)
