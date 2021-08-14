@@ -595,6 +595,61 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    internal class JChar private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "JChar"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                var remainString = str
+
+                val unescapedResult = Unescaped.greedyCreate(remainString)
+                if (unescapedResult.literal != null) {
+                    return GreedyCreateResult(unescapedResult.remainString, JChar(listOf(unescapedResult.literal)))
+                }
+
+                val children: MutableList<JsonLiteral> = mutableListOf()
+
+                val escapeResult = Escape.greedyCreate(remainString)
+                if (escapeResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(escapeResult.literal)
+                remainString = escapeResult.remainString
+
+                if (remainString.isEmpty()) return GreedyCreateResult(str, null)
+
+                val firstCodePoint = remainString.codePointAt(0)
+                remainString = remainString.substring(1)
+
+                return when (firstCodePoint) {
+                    0x22, 0x5C, 0x2F, 0x62, 0x66, 0x6E, 0x72, 0x74 -> {
+                        children.add(ABNFString(firstCodePoint.codeToStr()))
+                        GreedyCreateResult(remainString, JChar(children))
+                    }
+                    0x75 -> {
+                        //\uXXXX
+                        children.add(ABNFString(firstCodePoint.codeToStr()))
+                        for (i in 0..3) {
+                            val hexdigResult = ABNFHexDig.greedyCreate(remainString)
+                            if (hexdigResult.literal == null) {
+                                return GreedyCreateResult(str, null)
+                            }
+                            children.add(hexdigResult.literal)
+                            remainString = hexdigResult.remainString
+                        }
+
+                        GreedyCreateResult(remainString, JChar(children))
+                    }
+                    else -> {
+                        GreedyCreateResult(str, null)
+                    }
+                }
+            }
+        }
+    }
+
     internal class Escape private constructor(
         private val originalString: String
     ) : JsonLiteralImpl(emptyList()) {
