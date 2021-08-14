@@ -138,6 +138,35 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    //value = false / null / true / object / array / number / string
+    internal class Value private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "Value"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val literalCreatorList = listOf<(String) -> GreedyCreateResult>(
+                    { False.greedyCreate(it) },
+                    { Null.greedyCreate(it) },
+                    { True.greedyCreate(it) },
+                    { Number.greedyCreate(it) },
+                    { JString.greedyCreate(it) }
+                )
+
+                literalCreatorList.forEach { creator ->
+                    val result = creator.invoke(str)
+
+                    if (result.literal != null) {
+                        return GreedyCreateResult(result.remainString, Value(listOf(result.literal)))
+                    }
+                }
+
+                return GreedyCreateResult(str, null)
+            }
+        }
+    }
+
     internal class BeginArray private constructor(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
@@ -759,7 +788,7 @@ internal sealed class JsonLiteralImpl(
             fun greedyCreate(str: String): GreedyCreateResult {
                 val originalStringBuilder = StringBuilder(str)
 
-                if(str.isEmpty()) return GreedyCreateResult(str, null)
+                if (str.isEmpty()) return GreedyCreateResult(str, null)
 
                 val firstCodePoint = str.codePointAt(0)
                 originalStringBuilder.deleteAt(0)

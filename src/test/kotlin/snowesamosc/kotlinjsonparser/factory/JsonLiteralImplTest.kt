@@ -26,6 +26,30 @@ internal class JsonLiteralImplTest {
     }
 
     @Test
+    internal fun valueCreateTest() {
+        val result = JsonLiteralImpl.Value.greedyCreate("false")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf("false"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Value.greedyCreate("\"drfedas\"")
+
+        assertNotNull(result2.literal)
+        assertContentEquals(
+            listOf("\"drfedas\""),
+            result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Value.greedyCreate(" 600")
+
+        assertNull(result3.literal)
+        assertEquals(" 600", result3.remainString)
+    }
+
+    @Test
     internal fun beginArrayCreateTest() {
         oneCharLiteralTest('[') { JsonLiteralImpl.BeginArray.greedyCreate(it) }
     }
@@ -450,7 +474,8 @@ internal class JsonLiteralImplTest {
             "\"\\\\\"",
             "\"abcd\"",
             "\"\\\"\"",
-            "\"\\u66AF\"").forEach {
+            "\"\\u66AF\""
+        ).forEach {
             val result = JsonLiteralImpl.JString.greedyCreate(it)
 
             assertNotNull(result.literal)
