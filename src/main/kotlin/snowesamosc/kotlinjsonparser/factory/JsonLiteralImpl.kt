@@ -641,10 +641,40 @@ internal sealed class JsonLiteralImpl(
 
                 if (firstCodePoint == 0x22) {
                     nodeStringBuilder.appendCodePoint(firstCodePoint)
-                    return GreedyCreateResult(originalStringBuilder.toString(), QuotationMark(nodeStringBuilder.toString()))
+                    return GreedyCreateResult(
+                        originalStringBuilder.toString(),
+                        QuotationMark(nodeStringBuilder.toString())
+                    )
                 }
 
                 return GreedyCreateResult(str, null)
+            }
+        }
+    }
+
+    internal class Unescaped private constructor(
+        private val originalString: String
+    ) : JsonLiteralImpl(emptyList()) {
+        override fun getName(): String = "Unescaped"
+
+        override fun asString(): String = originalString
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val originalStringBuilder = StringBuilder(str)
+
+                val firstCodePoint = str.codePointAt(0)
+                originalStringBuilder.deleteAt(0)
+
+                return when (firstCodePoint) {
+                    in 0x20..0x21,
+                    in 0x23..0x5B,
+                    in 0x5D..0x10FFFF -> {
+                        val unescaped = Unescaped(firstCodePoint.codeToStr())
+                        GreedyCreateResult(originalStringBuilder.toString(), unescaped)
+                    }
+                    else -> GreedyCreateResult(str, null)
+                }
             }
         }
     }

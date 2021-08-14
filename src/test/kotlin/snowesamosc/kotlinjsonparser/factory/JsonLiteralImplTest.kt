@@ -484,6 +484,26 @@ internal class JsonLiteralImplTest {
         assertEquals("\"\"", result3.remainString)
     }
 
+    @Test
+    internal fun unescapedCreateTest() {
+        val result = JsonLiteralImpl.Unescaped.greedyCreate("jshf")
+
+        assertNotNull(result.literal)
+        assertEquals("j", result.literal.asString())
+        assertEquals("shf", result.remainString)
+
+        val result2 = JsonLiteralImpl.Unescaped.greedyCreate("\"")
+
+        assertNull(result2.literal)
+        assertEquals("\"", result2.remainString)
+
+        val result3 = JsonLiteralImpl.Unescaped.greedyCreate("[]")
+
+        assertNotNull(result3.literal)
+        assertEquals("[", result3.literal.asString())
+        assertEquals("]", result3.remainString)
+    }
+
     private fun literalTest(
         literalCreator: (String) -> GreedyCreateResult,
         originalString: String,
