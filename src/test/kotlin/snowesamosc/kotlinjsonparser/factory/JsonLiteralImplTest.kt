@@ -5,6 +5,31 @@ import kotlin.test.*
 
 internal class JsonLiteralImplTest {
     @Test
+    internal fun jsonTextCreateTest() {
+        val result = JsonLiteralImpl.JsonText.greedyCreate("    \n{\"Uni\":42}")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf("    \n", "{\"Uni\":42}", ""),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result.remainString)
+
+        val result2 = JsonLiteralImpl.Value.greedyCreate(" 60s")
+
+        assertNull(result2.literal)
+        assertEquals(" 60s", result2.remainString)
+
+        val result3 = JsonLiteralImpl.JsonText.greedyCreate("    \n\"Uni\"")
+
+        assertNotNull(result3.literal)
+        assertContentEquals(
+            listOf("    \n", "\"Uni\"", ""),
+            result3.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals("", result3.remainString)
+
+    }
+
+    @Test
     internal fun wsCreateTest() {
         val result = JsonLiteralImpl.WS.greedyCreate("")
 

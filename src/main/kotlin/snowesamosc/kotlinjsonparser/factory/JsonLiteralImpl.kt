@@ -108,6 +108,46 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    //JSON-text = ws value ws
+    internal class JsonText private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "JsonText"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                var remainString = str
+                val children: MutableList<JsonLiteral> = mutableListOf()
+
+                val wsResult1 = WS.greedyCreate(remainString)
+                if (wsResult1.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(wsResult1.literal)
+                remainString = wsResult1.remainString
+
+                val valueResult = Value.greedyCreate(remainString)
+                if (valueResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(valueResult.literal)
+                remainString = valueResult.remainString
+
+                val wsResult2 = WS.greedyCreate(remainString)
+                if (wsResult2.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(wsResult2.literal)
+                remainString = wsResult2.remainString
+
+                return GreedyCreateResult(remainString, JsonText(children))
+            }
+        }
+    }
+
     internal class WS private constructor(
         private val originalString: String
     ) : JsonLiteralImpl(emptyList()) {
