@@ -150,6 +150,8 @@ internal sealed class JsonLiteralImpl(
                     { False.greedyCreate(it) },
                     { Null.greedyCreate(it) },
                     { True.greedyCreate(it) },
+                    { JObject.greedyCreate(it) },
+                    { JArray.greedyCreate(it) },
                     { Number.greedyCreate(it) },
                     { JString.greedyCreate(it) }
                 )
