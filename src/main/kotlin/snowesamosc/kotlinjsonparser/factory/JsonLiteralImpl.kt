@@ -1,6 +1,9 @@
 package snowesamosc.kotlinjsonparser.factory
 
+import snowesamosc.kotlinjsonparser.node.BooleanNode
 import snowesamosc.kotlinjsonparser.node.JsonNode
+import snowesamosc.kotlinjsonparser.node.NullNode
+import snowesamosc.kotlinjsonparser.node.ObjectNode
 
 internal sealed class JsonLiteralImpl(
     private val children: List<JsonLiteral>
@@ -180,9 +183,25 @@ internal sealed class JsonLiteralImpl(
 
     //value = false / null / true / object / array / number / string
     internal class Value private constructor(
-        children: List<JsonLiteral>
-    ) : JsonLiteralImpl(children) {
+        private val child: JsonLiteral
+    ) : JsonLiteralImpl(listOf(child)) {
         override fun getName(): String = "Value"
+
+        override fun isJsonNode(): Boolean {
+            return true
+        }
+
+        override fun asJsonNode(): JsonNode {
+            return when (child) {
+                is False -> BooleanNode(false)
+                is Null -> NullNode
+                is True -> BooleanNode(true)
+                else -> {
+                    //最終的には起きなくなるはず
+                    throw IllegalStateException()
+                }
+            }
+        }
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult {
@@ -200,7 +219,7 @@ internal sealed class JsonLiteralImpl(
                     val result = creator.invoke(str)
 
                     if (result.literal != null) {
-                        return GreedyCreateResult(result.remainString, Value(listOf(result.literal)))
+                        return GreedyCreateResult(result.remainString, Value(result.literal))
                     }
                 }
 
