@@ -140,6 +140,17 @@ internal class JsonLiteralImplTest {
     }
 
     @Test
+    internal fun objectMemberCreateTest() {
+        val result = JsonLiteralImpl.ObjectMember.greedyCreate("\"Hi-Joji!\" :42,")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf("\"Hi-Joji!\"", " :", "42"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals(",", result.remainString)
+    }
+
+    @Test
     internal fun numberCreateTest() {
         val result = JsonLiteralImpl.Number.greedyCreate("-80.3e6")
 

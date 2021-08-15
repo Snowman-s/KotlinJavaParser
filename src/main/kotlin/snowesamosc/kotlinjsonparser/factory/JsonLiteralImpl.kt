@@ -341,6 +341,43 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    //member = string name-separator value
+    internal class ObjectMember private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "ObjectMember"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                val children: MutableList<JsonLiteral> = mutableListOf()
+                var remainString = str
+
+                val stringResult = JString.greedyCreate(remainString)
+                if (stringResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(stringResult.literal)
+                remainString = stringResult.remainString
+
+                val nameSeparatorResult = NameSeparator.greedyCreate(remainString)
+                if (nameSeparatorResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(nameSeparatorResult.literal)
+                remainString = nameSeparatorResult.remainString
+
+                val valueResult = Value.greedyCreate(remainString)
+                if (valueResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+                children.add(valueResult.literal)
+                remainString = valueResult.remainString
+
+                return GreedyCreateResult(remainString, ObjectMember(children))
+            }
+        }
+    }
+
     internal class Number private constructor(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
