@@ -341,6 +341,62 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    //object = begin-object [ member *( value-separator member ) ] end-object
+    internal class JObject private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "Object"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                var remainString = str
+                val children: MutableList<JsonLiteral> = mutableListOf()
+
+                val beginObjectResult = BeginObject.greedyCreate(remainString)
+                if (beginObjectResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(beginObjectResult.literal)
+                remainString = beginObjectResult.remainString
+
+                val firstObjectMemberResult = ObjectMember.greedyCreate(remainString)
+                if (firstObjectMemberResult.literal != null) {
+                    children.add(firstObjectMemberResult.literal)
+                    remainString = firstObjectMemberResult.remainString
+
+                    while (true) {
+                        val valueSeparatorResult = ValueSeparator.greedyCreate(remainString)
+                        if (valueSeparatorResult.literal == null) {
+                            break
+                        }
+
+                        children.add(valueSeparatorResult.literal)
+                        remainString = valueSeparatorResult.remainString
+
+                        val objectMemberResult = ObjectMember.greedyCreate(remainString)
+                        if (objectMemberResult.literal == null) {
+                            return GreedyCreateResult(str, null)
+                        }
+
+                        children.add(objectMemberResult.literal)
+                        remainString = objectMemberResult.remainString
+                    }
+                }
+
+                val endObjectResult = EndObject.greedyCreate(remainString)
+                if (endObjectResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(endObjectResult.literal)
+                remainString = endObjectResult.remainString
+
+                return GreedyCreateResult(remainString, JObject(children))
+            }
+        }
+    }
+
     //member = string name-separator value
     internal class ObjectMember private constructor(
         children: List<JsonLiteral>

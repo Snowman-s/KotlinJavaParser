@@ -140,6 +140,22 @@ internal class JsonLiteralImplTest {
     }
 
     @Test
+    internal fun jObjectCreateTest() {
+        val result = JsonLiteralImpl.JObject.greedyCreate("{\"Hi-Joji!\" :42},")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf("{", "\"Hi-Joji!\" :42", "}"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals(",", result.remainString)
+
+        val result2 = JsonLiteralImpl.JObject.greedyCreate("{\"Universe\" :42,}")
+
+        assertNull(result2.literal)
+        assertEquals("{\"Universe\" :42,}", result2.remainString)
+    }
+
+    @Test
     internal fun objectMemberCreateTest() {
         val result = JsonLiteralImpl.ObjectMember.greedyCreate("\"Hi-Joji!\" :42,")
 
