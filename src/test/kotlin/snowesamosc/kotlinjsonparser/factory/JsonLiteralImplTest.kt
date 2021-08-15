@@ -167,6 +167,22 @@ internal class JsonLiteralImplTest {
     }
 
     @Test
+    internal fun jArrayCreateTest() {
+        val result = JsonLiteralImpl.JArray.greedyCreate("[\"Hi-Joji!\", 42],")
+
+        assertNotNull(result.literal)
+        assertContentEquals(
+            listOf("[", "\"Hi-Joji!\"", ", ", "42", "]"),
+            result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        assertEquals(",", result.remainString)
+
+        val result2 = JsonLiteralImpl.JArray.greedyCreate("[\"Universe\", 42,]")
+
+        assertNull(result2.literal)
+        assertEquals("[\"Universe\", 42,]", result2.remainString)
+    }
+
+    @Test
     internal fun numberCreateTest() {
         val result = JsonLiteralImpl.Number.greedyCreate("-80.3e6")
 

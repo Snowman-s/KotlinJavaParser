@@ -434,6 +434,62 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
+    //object = begin-array [ value *( value-separator value ) ] end-array
+    internal class JArray private constructor(
+        children: List<JsonLiteral>
+    ) : JsonLiteralImpl(children) {
+        override fun getName(): String = "Array"
+
+        companion object Factory {
+            fun greedyCreate(str: String): GreedyCreateResult {
+                var remainString = str
+                val children: MutableList<JsonLiteral> = mutableListOf()
+
+                val beginArrayResult = BeginArray.greedyCreate(remainString)
+                if (beginArrayResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(beginArrayResult.literal)
+                remainString = beginArrayResult.remainString
+
+                val firstValueResult = Value.greedyCreate(remainString)
+                if (firstValueResult.literal != null) {
+                    children.add(firstValueResult.literal)
+                    remainString = firstValueResult.remainString
+
+                    while (true) {
+                        val valueSeparatorResult = ValueSeparator.greedyCreate(remainString)
+                        if (valueSeparatorResult.literal == null) {
+                            break
+                        }
+
+                        children.add(valueSeparatorResult.literal)
+                        remainString = valueSeparatorResult.remainString
+
+                        val valueResult = Value.greedyCreate(remainString)
+                        if (valueResult.literal == null) {
+                            return GreedyCreateResult(str, null)
+                        }
+
+                        children.add(valueResult.literal)
+                        remainString = valueResult.remainString
+                    }
+                }
+
+                val endObjectResult = EndArray.greedyCreate(remainString)
+                if (endObjectResult.literal == null) {
+                    return GreedyCreateResult(str, null)
+                }
+
+                children.add(endObjectResult.literal)
+                remainString = endObjectResult.remainString
+
+                return GreedyCreateResult(remainString, JArray(children))
+            }
+        }
+    }
+
     internal class Number private constructor(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
