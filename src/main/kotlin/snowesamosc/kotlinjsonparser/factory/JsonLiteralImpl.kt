@@ -3,7 +3,6 @@ package snowesamosc.kotlinjsonparser.factory
 import snowesamosc.kotlinjsonparser.node.BooleanNode
 import snowesamosc.kotlinjsonparser.node.JsonNode
 import snowesamosc.kotlinjsonparser.node.NullNode
-import snowesamosc.kotlinjsonparser.node.ObjectNode
 
 internal sealed class JsonLiteralImpl(
     private val children: List<JsonLiteral>
@@ -56,7 +55,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<ABNFDigit> {
                 val nodeStringBuilder = StringBuilder()
                 val originalStringBuilder = StringBuilder(str)
 
@@ -84,7 +83,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "ABNFHexDig"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<ABNFHexDig> {
                 val abnfDigitResult = ABNFDigit.greedyCreate(str)
                 if (abnfDigitResult.literal != null) {
                     return GreedyCreateResult(abnfDigitResult.remainString, ABNFHexDig(listOf(abnfDigitResult.literal)))
@@ -118,7 +117,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "JsonText"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<JsonText> {
                 var remainString = str
                 val children: MutableList<JsonLiteral> = mutableListOf()
 
@@ -159,7 +158,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<WS> {
                 val nodeBuilder = StringBuilder()
                 val originalStringBuilder = StringBuilder(str)
 
@@ -204,8 +203,8 @@ internal sealed class JsonLiteralImpl(
         }
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
-                val literalCreatorList = listOf<(String) -> GreedyCreateResult>(
+            fun greedyCreate(str: String): GreedyCreateResult<Value> {
+                val literalCreatorList = listOf<(String) -> GreedyCreateResult<JsonLiteral>>(
                     { False.greedyCreate(it) },
                     { Null.greedyCreate(it) },
                     { True.greedyCreate(it) },
@@ -234,7 +233,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "BeginArray"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<BeginArray> {
                 val pair = separateOneCharLiteral(str, 0x5B)
                 val children = pair.first
                 val remain = pair.second
@@ -253,7 +252,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "BeginObject"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<BeginObject> {
                 val pair = separateOneCharLiteral(str, 0x7B)
                 val children = pair.first
                 val remain = pair.second
@@ -272,7 +271,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "EndArray"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<EndArray> {
                 val pair = separateOneCharLiteral(str, 0x5D)
                 val children = pair.first
                 val remain = pair.second
@@ -291,7 +290,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "EndObject"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<EndObject> {
                 val pair = separateOneCharLiteral(str, 0x7D)
                 val children = pair.first
                 val remain = pair.second
@@ -310,7 +309,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "NameSeparator"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<NameSeparator> {
                 val pair = separateOneCharLiteral(str, 0x3A)
                 val children = pair.first
                 val remain = pair.second
@@ -329,7 +328,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "ValueSeparator"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<ValueSeparator> {
                 val pair = separateOneCharLiteral(str, 0x2C)
                 val children = pair.first
                 val remain = pair.second
@@ -350,7 +349,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<False> {
                 val falseString = "\u0066\u0061\u006c\u0073\u0065"
 
                 if (!str.startsWith(falseString)) {
@@ -370,7 +369,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Null> {
                 val nullString = "\u006e\u0075\u006c\u006c"
 
                 if (!str.startsWith(nullString)) {
@@ -390,7 +389,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<True> {
                 val trueString = "\u0074\u0072\u0075\u0065"
 
                 if (!str.startsWith(trueString)) {
@@ -409,7 +408,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "Object"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<JObject> {
                 var remainString = str
                 val children: MutableList<JsonLiteral> = mutableListOf()
 
@@ -465,7 +464,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "ObjectMember"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<ObjectMember> {
                 val children: MutableList<JsonLiteral> = mutableListOf()
                 var remainString = str
 
@@ -502,7 +501,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "Array"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<JArray> {
                 var remainString = str
                 val children: MutableList<JsonLiteral> = mutableListOf()
 
@@ -557,7 +556,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "Number"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Number> {
                 val children: MutableList<JsonLiteral> = mutableListOf()
                 var remainString = str
 
@@ -599,7 +598,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<DecimalPoint> {
                 if (str.isEmpty() || str.codePointAt(0) != 0x2E) return GreedyCreateResult(str, null)
 
                 return GreedyCreateResult(str.removePrefix("."), DecimalPoint("."))
@@ -615,7 +614,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Digit19> {
                 val nodeStringBuilder = StringBuilder()
                 val originalStringBuilder = StringBuilder(str)
 
@@ -642,7 +641,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<E> {
                 val nodeStringBuilder = StringBuilder()
                 val originalStringBuilder = StringBuilder(str)
 
@@ -667,7 +666,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "Exp"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Exp> {
                 val children: MutableList<JsonLiteral> = mutableListOf()
                 var remainString = str
 
@@ -717,7 +716,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "Frac"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Frac> {
                 val children: MutableList<JsonLiteral> = mutableListOf()
                 var remainString = str
 
@@ -755,7 +754,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "Int"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Int> {
                 var remainString = str
 
                 val zeroResult = Zero.greedyCreate(remainString)
@@ -794,7 +793,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Minus> {
                 if (str.isEmpty() || str.codePointAt(0) != 0x2D) return GreedyCreateResult(str, null)
 
                 return GreedyCreateResult(str.removePrefix("-"), Minus("-"))
@@ -810,7 +809,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Plus> {
                 if (str.isEmpty() || str.codePointAt(0) != 0x2B) return GreedyCreateResult(str, null)
 
                 return GreedyCreateResult(str.removePrefix("+"), Plus("+"))
@@ -826,7 +825,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Zero> {
                 if (str.isEmpty() || str.codePointAt(0) != 0x30) return GreedyCreateResult(str, null)
 
                 return GreedyCreateResult(str.removePrefix("0"), Zero("0"))
@@ -840,7 +839,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "JString"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<JString> {
                 var remainString = str
                 val children: MutableList<JsonLiteral> = mutableListOf()
 
@@ -881,7 +880,7 @@ internal sealed class JsonLiteralImpl(
         override fun getName(): String = "JChar"
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<JChar> {
                 var remainString = str
 
                 val unescapedResult = Unescaped.greedyCreate(remainString)
@@ -938,7 +937,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Escape> {
                 val nodeStringBuilder = StringBuilder()
                 val originalStringBuilder = StringBuilder(str)
 
@@ -965,7 +964,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<QuotationMark> {
                 val nodeStringBuilder = StringBuilder()
                 val originalStringBuilder = StringBuilder(str)
 
@@ -995,7 +994,7 @@ internal sealed class JsonLiteralImpl(
         override fun asString(): String = originalString
 
         companion object Factory {
-            fun greedyCreate(str: String): GreedyCreateResult {
+            fun greedyCreate(str: String): GreedyCreateResult<Unescaped> {
                 val originalStringBuilder = StringBuilder(str)
 
                 if (str.isEmpty()) return GreedyCreateResult(str, null)

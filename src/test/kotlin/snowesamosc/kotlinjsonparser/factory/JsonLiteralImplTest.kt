@@ -634,7 +634,7 @@ internal class JsonLiteralImplTest {
     }
 
     private fun literalTest(
-        literalCreator: (String) -> GreedyCreateResult,
+        literalCreator: (String) -> GreedyCreateResult<JsonLiteral>,
         originalString: String,
         childrenStrList: List<String>,
         remain: String
@@ -649,7 +649,7 @@ internal class JsonLiteralImplTest {
 
     private fun oneCharLiteralTest(
         theChar: Char,
-        literalCreator: (String) -> GreedyCreateResult
+        literalCreator: (String) -> GreedyCreateResult<JsonLiteral>
     ) {
         literalTest(literalCreator, theChar.toString(), listOf("", theChar.toString(), ""), "")
         literalTest(literalCreator, " \t\n$theChar \n", listOf(" \t\n", theChar.toString(), " \n"), "")
