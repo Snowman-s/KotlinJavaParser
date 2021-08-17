@@ -132,6 +132,14 @@ internal sealed class JsonLiteralImpl(
     ) : JsonLiteralImpl(children) {
         override fun getName(): String = "JsonText"
 
+        override fun asJsonNode(): JsonNode? {
+            return getChildren()[1].asJsonNode()
+        }
+
+        override fun isJsonNode(): Boolean {
+            return true
+        }
+
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<JsonText> {
                 var remainString = str
