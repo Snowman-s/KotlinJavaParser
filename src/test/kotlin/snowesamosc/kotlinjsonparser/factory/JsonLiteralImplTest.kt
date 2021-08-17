@@ -99,6 +99,13 @@ internal class JsonLiteralImplTest {
         assertFalse(node5.isInt())
         assertEquals(42.8e5, node5.asNumber())
         assertEquals("", result5.remainString)
+
+        val result6 = JsonLiteralImpl.Value.greedyCreate("{\"universe\":42}")
+
+        assertNotNull(result6.literal)
+        val node6 = result6.literal.asJsonNode()
+        assertEquals(42, node6.find("universe").asInt())
+        assertEquals("", result6.remainString)
     }
 
     @Test

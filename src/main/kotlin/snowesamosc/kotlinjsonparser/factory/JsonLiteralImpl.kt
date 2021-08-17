@@ -216,6 +216,15 @@ internal sealed class JsonLiteralImpl(
                     val num = child.getTheNumber()
                     if (num is kotlin.Int) IntegerNode(num) else NumberNode(num)
                 }
+                is JObject -> {
+                    val builder = ObjectNode.Builder()
+
+                    child.getMembers().forEach {
+                        builder.append(it.key, it.value.asJsonNode())
+                    }
+
+                    builder.build()
+                }
                 else -> {
                     //最終的には起きなくなるはず
                     throw IllegalStateException()
@@ -423,14 +432,17 @@ internal sealed class JsonLiteralImpl(
     }
 
     //object = begin-object [ member *( value-separator member ) ] end-object
-    internal class JObject private constructor(
-        children: List<JsonLiteral>
+    internal abstract class JObject private constructor(
+        children: List<JsonLiteral>,
     ) : JsonLiteralImpl(children) {
         override fun getName(): String = "Object"
+
+        abstract fun getMembers(): Map<String, Value>
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<JObject> {
                 var remainString = str
+                val members: MutableList<ObjectMember> = mutableListOf()
                 val children: MutableList<JsonLiteral> = mutableListOf()
 
                 val beginObjectResult = BeginObject.greedyCreate(remainString)
@@ -444,6 +456,7 @@ internal sealed class JsonLiteralImpl(
                 val firstObjectMemberResult = ObjectMember.greedyCreate(remainString)
                 if (firstObjectMemberResult.literal != null) {
                     children.add(firstObjectMemberResult.literal)
+                    members.add(firstObjectMemberResult.literal)
                     remainString = firstObjectMemberResult.remainString
 
                     while (true) {
@@ -461,6 +474,7 @@ internal sealed class JsonLiteralImpl(
                         }
 
                         children.add(objectMemberResult.literal)
+                        members.add(objectMemberResult.literal)
                         remainString = objectMemberResult.remainString
                     }
                 }
@@ -473,16 +487,29 @@ internal sealed class JsonLiteralImpl(
                 children.add(endObjectResult.literal)
                 remainString = endObjectResult.remainString
 
-                return GreedyCreateResult(remainString, JObject(children))
+                return GreedyCreateResult(remainString, object : JObject(children) {
+                    override fun getMembers(): Map<String, Value> {
+                        val map = mutableMapOf<String, Value>()
+
+                        members.map { it.getKeyValuePair() }
+                            .forEach {
+                                map[it.first] = it.second
+                            }
+
+                        return map
+                    }
+                })
             }
         }
     }
 
     //member = string name-separator value
-    internal class ObjectMember private constructor(
-        children: List<JsonLiteral>
+    internal abstract class ObjectMember private constructor(
+        children: List<JsonLiteral>,
     ) : JsonLiteralImpl(children) {
         override fun getName(): String = "ObjectMember"
+
+        abstract fun getKeyValuePair(): Pair<String, Value>
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<ObjectMember> {
@@ -510,7 +537,12 @@ internal sealed class JsonLiteralImpl(
                 children.add(valueResult.literal)
                 remainString = valueResult.remainString
 
-                return GreedyCreateResult(remainString, ObjectMember(children))
+                val key = stringResult.literal.getTheString()
+                val value = valueResult.literal
+                return GreedyCreateResult(remainString, object : ObjectMember(children) {
+                    override fun getKeyValuePair(): Pair<String, Value> =
+                        Pair(key, value)
+                })
             }
         }
     }
