@@ -23,7 +23,11 @@ internal class JsonLiteralParserTest {
                 "universe": 42,
                 "obj": {
                     "universe_in_obj": "42"
-                }
+                },
+                "array":[
+                    "universe_in_array",
+                    42
+                ]
             }
         """.trimIndent()
 
@@ -33,5 +37,8 @@ internal class JsonLiteralParserTest {
         assertEquals("42", result1.get("obj").get("universe_in_obj").asText())
         assertThrows<JsonException> { result1.get("obj").get("universe_in_cat") }
         assertTrue { result1.get("obj").find("universe_in_cat").isMissing() }
+        val array = assertDoesNotThrow { result1.get("array").asArray() }
+        assertEquals("universe_in_array", array[0].asText())
+        assertEquals(42, array[1].asInt())
     }
 }
