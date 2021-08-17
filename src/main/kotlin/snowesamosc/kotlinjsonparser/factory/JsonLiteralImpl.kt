@@ -54,6 +54,10 @@ internal sealed class JsonLiteralImpl(
 
         override fun asString(): String = originalString
 
+        fun asInt(): kotlin.Int {
+            return Integer.valueOf(originalString)
+        }
+
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<ABNFDigit> {
                 val nodeStringBuilder = StringBuilder()
@@ -77,16 +81,21 @@ internal sealed class JsonLiteralImpl(
     /**
      * ABNFルール(RFC5234)のHEXDIGを表す。
      */
-    internal class ABNFHexDig private constructor(
+    internal abstract class ABNFHexDig private constructor(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
         override fun getName(): String = "ABNFHexDig"
+
+        abstract fun asInt(): kotlin.Int
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<ABNFHexDig> {
                 val abnfDigitResult = ABNFDigit.greedyCreate(str)
                 if (abnfDigitResult.literal != null) {
-                    return GreedyCreateResult(abnfDigitResult.remainString, ABNFHexDig(listOf(abnfDigitResult.literal)))
+                    return GreedyCreateResult(abnfDigitResult.remainString,
+                        object : ABNFHexDig(listOf(abnfDigitResult.literal)) {
+                            override fun asInt(): kotlin.Int = abnfDigitResult.literal.asInt()
+                        })
                 }
 
                 val originalStringBuilder = StringBuilder(str)
@@ -96,16 +105,25 @@ internal sealed class JsonLiteralImpl(
                 val firstCodePoint = str.codePointAt(0)
                 originalStringBuilder.deleteAt(0)
 
-                if (listOf('a', 'b', 'c', 'd', 'e', 'f').any {
-                        it.code == firstCodePoint || it.uppercaseChar().code == firstCodePoint
-                    }) {
-                    return GreedyCreateResult(
-                        originalStringBuilder.toString(),
-                        ABNFHexDig(listOf(ABNFString(firstCodePoint.codeToStr())))
-                    )
+                val thisCharAndInt = listOf(
+                    Pair('a', 0xa),
+                    Pair('b', 0xb),
+                    Pair('c', 0xc),
+                    Pair('d', 0xd),
+                    Pair('e', 0xe),
+                    Pair('f', 0xf)
+                ).find { p: Pair<Char, kotlin.Int> ->
+                    p.first.code == firstCodePoint || p.first.uppercaseChar().code == firstCodePoint
                 }
 
-                return GreedyCreateResult(str, null)
+                return thisCharAndInt?.let {
+                    GreedyCreateResult(
+                        originalStringBuilder.toString(),
+                        object : ABNFHexDig(listOf(ABNFString(firstCodePoint.codeToStr()))) {
+                            override fun asInt(): kotlin.Int = it.second
+                        }
+                    )
+                } ?: GreedyCreateResult(str, null)
             }
         }
     }
@@ -833,15 +851,18 @@ internal sealed class JsonLiteralImpl(
         }
     }
 
-    internal class JString private constructor(
+    internal abstract class JString private constructor(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
         override fun getName(): String = "JString"
+
+        abstract fun getTheString(): String
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<JString> {
                 var remainString = str
                 val children: MutableList<JsonLiteral> = mutableListOf()
+                val chars: MutableList<JChar> = mutableListOf()
 
                 val quotationMarkResult1 = QuotationMark.greedyCreate(remainString)
                 if (quotationMarkResult1.literal == null) {
@@ -857,6 +878,7 @@ internal sealed class JsonLiteralImpl(
                         break
                     }
 
+                    chars.add(jCharResult.literal)
                     children.add(jCharResult.literal)
                     remainString = jCharResult.remainString
                 }
@@ -869,15 +891,20 @@ internal sealed class JsonLiteralImpl(
                 children.add(quotationMarkResult2.literal)
                 remainString = quotationMarkResult2.remainString
 
-                return GreedyCreateResult(remainString, JString(children))
+                return GreedyCreateResult(remainString, object : JString(children) {
+                    override fun getTheString(): String =
+                        chars.map { it.getTheCodePoint() }.joinToString(separator = "") { it.codeToStr() }
+                })
             }
         }
     }
 
-    internal class JChar private constructor(
+    internal abstract class JChar private constructor(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
         override fun getName(): String = "JChar"
+
+        abstract fun getTheCodePoint(): kotlin.Int
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<JChar> {
@@ -885,7 +912,12 @@ internal sealed class JsonLiteralImpl(
 
                 val unescapedResult = Unescaped.greedyCreate(remainString)
                 if (unescapedResult.literal != null) {
-                    return GreedyCreateResult(unescapedResult.remainString, JChar(listOf(unescapedResult.literal)))
+                    return GreedyCreateResult(
+                        unescapedResult.remainString,
+                        object : JChar(listOf(unescapedResult.literal)) {
+                            override fun getTheCodePoint(): kotlin.Int =
+                                unescapedResult.literal.asString().codePointAt(0)
+                        })
                 }
 
                 val children: MutableList<JsonLiteral> = mutableListOf()
@@ -905,21 +937,41 @@ internal sealed class JsonLiteralImpl(
                 return when (firstCodePoint) {
                     0x22, 0x5C, 0x2F, 0x62, 0x66, 0x6E, 0x72, 0x74 -> {
                         children.add(ABNFString(firstCodePoint.codeToStr()))
-                        GreedyCreateResult(remainString, JChar(children))
+
+                        val theChar: kotlin.Int = mapOf(
+                            Pair(0x22, 0x22),
+                            Pair(0x5C, 0x5C),
+                            Pair(0x2F, 0x2F),
+                            Pair(0x62, 0x8),
+                            Pair(0x66, 0xC),
+                            Pair(0x6E, 0xA),
+                            Pair(0x72, 0xD),
+                            Pair(0x74, 0x9)
+                        )[firstCodePoint]!!
+
+                        GreedyCreateResult(remainString, object : JChar(children) {
+                            override fun getTheCodePoint(): kotlin.Int = theChar
+                        })
                     }
                     0x75 -> {
                         //\uXXXX
                         children.add(ABNFString(firstCodePoint.codeToStr()))
-                        for (i in 0..3) {
+
+                        var theDigit = 0
+                        for (i in 3 downTo 0) {
                             val hexdigResult = ABNFHexDig.greedyCreate(remainString)
                             if (hexdigResult.literal == null) {
                                 return GreedyCreateResult(str, null)
                             }
                             children.add(hexdigResult.literal)
                             remainString = hexdigResult.remainString
+
+                            theDigit = theDigit or (hexdigResult.literal.asInt() shl (4 * i))
                         }
 
-                        GreedyCreateResult(remainString, JChar(children))
+                        GreedyCreateResult(remainString, object : JChar(children) {
+                            override fun getTheCodePoint(): kotlin.Int = theDigit
+                        })
                     }
                     else -> {
                         GreedyCreateResult(str, null)

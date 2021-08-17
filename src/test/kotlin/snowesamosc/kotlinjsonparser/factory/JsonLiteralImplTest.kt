@@ -539,15 +539,16 @@ internal class JsonLiteralImplTest {
     @Test
     internal fun jStringCreateTest() {
         listOf(
-            "\"\\\\\"",
-            "\"abcd\"",
-            "\"\\\"\"",
-            "\"\\u66AF\""
+            Pair("\"\\\\\"", "\\"),
+            Pair("\"abcd\"", "abcd"),
+            Pair("\"\\\"\"", "\""),
+            Pair("\"\\u66AF\"", "暯")
         ).forEach {
-            val result = JsonLiteralImpl.JString.greedyCreate(it)
+            val result = JsonLiteralImpl.JString.greedyCreate(it.first)
 
             assertNotNull(result.literal)
-            assertEquals(it, result.literal.asString())
+            assertEquals(it.first, result.literal.asString())
+            assertEquals(it.second, result.literal.getTheString())
             assertEquals("", result.remainString)
         }
 
