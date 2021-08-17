@@ -225,6 +225,11 @@ internal sealed class JsonLiteralImpl(
 
                     builder.build()
                 }
+                is JArray -> {
+                    ArrayNode(
+                        child.getValues().map { it.asJsonNode() }.toTypedArray()
+                    )
+                }
                 else -> {
                     //最終的には起きなくなるはず
                     throw IllegalStateException()
@@ -548,15 +553,18 @@ internal sealed class JsonLiteralImpl(
     }
 
     //object = begin-array [ value *( value-separator value ) ] end-array
-    internal class JArray private constructor(
+    internal abstract class JArray private constructor(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
         override fun getName(): String = "Array"
+
+        abstract fun getValues(): List<Value>
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<JArray> {
                 var remainString = str
                 val children: MutableList<JsonLiteral> = mutableListOf()
+                val values: MutableList<Value> = mutableListOf()
 
                 val beginArrayResult = BeginArray.greedyCreate(remainString)
                 if (beginArrayResult.literal == null) {
@@ -569,6 +577,7 @@ internal sealed class JsonLiteralImpl(
                 val firstValueResult = Value.greedyCreate(remainString)
                 if (firstValueResult.literal != null) {
                     children.add(firstValueResult.literal)
+                    values.add(firstValueResult.literal)
                     remainString = firstValueResult.remainString
 
                     while (true) {
@@ -586,6 +595,7 @@ internal sealed class JsonLiteralImpl(
                         }
 
                         children.add(valueResult.literal)
+                        values.add(valueResult.literal)
                         remainString = valueResult.remainString
                     }
                 }
@@ -598,7 +608,9 @@ internal sealed class JsonLiteralImpl(
                 children.add(endObjectResult.literal)
                 remainString = endObjectResult.remainString
 
-                return GreedyCreateResult(remainString, JArray(children))
+                return GreedyCreateResult(remainString, object : JArray(children) {
+                    override fun getValues(): List<Value> = values
+                })
             }
         }
     }

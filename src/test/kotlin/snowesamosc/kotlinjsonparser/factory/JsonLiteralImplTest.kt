@@ -106,6 +106,16 @@ internal class JsonLiteralImplTest {
         val node6 = result6.literal.asJsonNode()
         assertEquals(42, node6.find("universe").asInt())
         assertEquals("", result6.remainString)
+
+        val result7 = JsonLiteralImpl.Value.greedyCreate("[\"universe\", 42, 60e8]")
+
+        assertNotNull(result7.literal)
+        val node7 = result7.literal.asJsonNode()
+        val node7array = node7.asArray()
+        assertEquals("universe", node7array[0].asText())
+        assertEquals(42, node7array[1].asInt())
+        assertEquals(60e8, node7array[2].asNumber())
+        assertEquals("", result7.remainString)
     }
 
     @Test
