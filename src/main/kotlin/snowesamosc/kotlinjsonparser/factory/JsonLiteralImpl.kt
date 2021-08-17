@@ -1,8 +1,6 @@
 package snowesamosc.kotlinjsonparser.factory
 
-import snowesamosc.kotlinjsonparser.node.BooleanNode
-import snowesamosc.kotlinjsonparser.node.JsonNode
-import snowesamosc.kotlinjsonparser.node.NullNode
+import snowesamosc.kotlinjsonparser.node.*
 
 internal sealed class JsonLiteralImpl(
     private val children: List<JsonLiteral>
@@ -213,6 +211,11 @@ internal sealed class JsonLiteralImpl(
                 is False -> BooleanNode(false)
                 is Null -> NullNode
                 is True -> BooleanNode(true)
+                is JString -> TextNode(child.getTheString())
+                is Number -> {
+                    val num = child.getTheNumber()
+                    if (num is kotlin.Int) IntegerNode(num) else NumberNode(num)
+                }
                 else -> {
                     //最終的には起きなくなるはず
                     throw IllegalStateException()
@@ -572,6 +575,15 @@ internal sealed class JsonLiteralImpl(
         children: List<JsonLiteral>
     ) : JsonLiteralImpl(children) {
         override fun getName(): String = "Number"
+
+        fun getTheNumber(): kotlin.Number {
+            //偶然にもvalueOf()が解釈可能な為これを使用。
+            return try {
+                Integer.valueOf(this.asString())
+            } catch (e: NumberFormatException) {
+                java.lang.Double.valueOf(this.asString())
+            }
+        }
 
         companion object Factory {
             fun greedyCreate(str: String): GreedyCreateResult<Number> {

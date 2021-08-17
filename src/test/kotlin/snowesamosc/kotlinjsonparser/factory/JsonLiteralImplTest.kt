@@ -58,6 +58,9 @@ internal class JsonLiteralImplTest {
         assertContentEquals(
             listOf("false"),
             result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+
+        val node = result.literal.asJsonNode()
+        assertEquals(false, node.asBoolean())
         assertEquals("", result.remainString)
 
         val result2 = JsonLiteralImpl.Value.greedyCreate("\"drfedas\"")
@@ -66,12 +69,36 @@ internal class JsonLiteralImplTest {
         assertContentEquals(
             listOf("\"drfedas\""),
             result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        val node2 = result2.literal.asJsonNode()
+        assertEquals("drfedas", node2.asText())
         assertEquals("", result2.remainString)
 
         val result3 = JsonLiteralImpl.Value.greedyCreate(" 600")
 
         assertNull(result3.literal)
         assertEquals(" 600", result3.remainString)
+
+        val result4 = JsonLiteralImpl.Value.greedyCreate("42")
+
+        assertNotNull(result4.literal)
+        assertContentEquals(
+            listOf("42"),
+            result4.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        val node4 = result4.literal.asJsonNode()
+        assertEquals(42, node4.asInt())
+        assertEquals(42, node4.asNumber())
+        assertEquals("", result4.remainString)
+
+        val result5 = JsonLiteralImpl.Value.greedyCreate("42.8e5")
+
+        assertNotNull(result5.literal)
+        assertContentEquals(
+            listOf("42.8e5"),
+            result5.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        val node5 = result5.literal.asJsonNode()
+        assertFalse(node5.isInt())
+        assertEquals(42.8e5, node5.asNumber())
+        assertEquals("", result5.remainString)
     }
 
     @Test
