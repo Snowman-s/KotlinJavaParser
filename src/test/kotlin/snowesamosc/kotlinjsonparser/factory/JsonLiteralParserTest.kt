@@ -6,6 +6,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import snowesamosc.kotlinjsonparser.JsonException
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class JsonLiteralParserTest {
@@ -27,7 +28,11 @@ internal class JsonLiteralParserTest {
                 "array":[
                     "universe_in_array",
                     42
-                ]
+                ],
+                "overlap":[
+                    "universe_dispose"
+                ],
+                "overlap":"universe_active"
             }
         """.trimIndent()
 
@@ -40,5 +45,7 @@ internal class JsonLiteralParserTest {
         val array = assertDoesNotThrow { result1.get("array").asArray() }
         assertEquals("universe_in_array", array[0].asText())
         assertEquals(42, array[1].asInt())
+        assertFalse(result1.get("overlap").isArray())
+        assertEquals("universe_active", result1.get("overlap").asText())
     }
 }
