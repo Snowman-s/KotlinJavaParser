@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import snowesamosc.kotlinjsonparser.JsonException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -40,7 +39,7 @@ internal class JsonLiteralParserTest {
 
         assertEquals(42, result1.get("universe").asInt())
         assertEquals("42", result1.get("obj").get("universe_in_obj").asText())
-        assertThrows<JsonException> { result1.get("obj").get("universe_in_cat") }
+        assertThrows<IllegalStateException> { result1.get("obj").get("universe_in_cat") }
         assertTrue { result1.get("obj").find("universe_in_cat").isMissing() }
         val result1Array = assertDoesNotThrow { result1.get("array").asArray() }
         assertEquals("universe_in_array", result1Array[0].asText())
@@ -59,7 +58,7 @@ internal class JsonLiteralParserTest {
             042
         """.trimIndent()
 
-        assertThrows<JsonException> { parser.parse(str3) }
+        assertThrows<IllegalArgumentException> { parser.parse(str3) }
 
         val str4 = """
             [
@@ -70,7 +69,7 @@ internal class JsonLiteralParserTest {
         val result4 = assertDoesNotThrow { parser.parse(str4) }
         result4.asArray().forEach {
             assertFalse { it.isInt() }
-            assertThrows<JsonException> { it.asInt() }
+            assertThrows<IllegalStateException> { it.asInt() }
         }
         assertTrue { (result4.asArray().map { it.asNumber() }).distinct().count() == 1 }
     }

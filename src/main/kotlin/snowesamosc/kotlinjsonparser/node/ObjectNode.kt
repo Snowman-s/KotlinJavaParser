@@ -1,14 +1,12 @@
 package snowesamosc.kotlinjsonparser.node
 
-import snowesamosc.kotlinjsonparser.JsonException
-
 internal class ObjectNode(data: Map<String, JsonNode>) : AbstractNode() {
     constructor(builder: Builder) : this(builder.data)
 
     private val map: Map<String, JsonNode> = data
 
     override fun get(key: String): JsonNode {
-        return map[key] ?: throw JsonException("this node does not have \"$key\"")
+        return map[key] ?: throw IllegalStateException("this node does not have \"$key\"")
     }
 
     override fun find(key: String): JsonNode {
