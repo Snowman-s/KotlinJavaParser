@@ -58,6 +58,9 @@ internal class JsonLiteralImplTest {
         assertContentEquals(
             listOf("false"),
             result.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+
+        val node = result.literal.asJsonNode()
+        assertEquals(false, node.asBoolean())
         assertEquals("", result.remainString)
 
         val result2 = JsonLiteralImpl.Value.greedyCreate("\"drfedas\"")
@@ -66,12 +69,53 @@ internal class JsonLiteralImplTest {
         assertContentEquals(
             listOf("\"drfedas\""),
             result2.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        val node2 = result2.literal.asJsonNode()
+        assertEquals("drfedas", node2.asText())
         assertEquals("", result2.remainString)
 
         val result3 = JsonLiteralImpl.Value.greedyCreate(" 600")
 
         assertNull(result3.literal)
         assertEquals(" 600", result3.remainString)
+
+        val result4 = JsonLiteralImpl.Value.greedyCreate("42")
+
+        assertNotNull(result4.literal)
+        assertContentEquals(
+            listOf("42"),
+            result4.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        val node4 = result4.literal.asJsonNode()
+        assertEquals(42, node4.asInt())
+        assertEquals(42, node4.asNumber())
+        assertEquals("", result4.remainString)
+
+        val result5 = JsonLiteralImpl.Value.greedyCreate("42.8e5")
+
+        assertNotNull(result5.literal)
+        assertContentEquals(
+            listOf("42.8e5"),
+            result5.literal.getChildren().map { jsonLiteral -> jsonLiteral.asString() })
+        val node5 = result5.literal.asJsonNode()
+        assertFalse(node5.isInt())
+        assertEquals(42.8e5, node5.asNumber())
+        assertEquals("", result5.remainString)
+
+        val result6 = JsonLiteralImpl.Value.greedyCreate("{\"universe\":42}")
+
+        assertNotNull(result6.literal)
+        val node6 = result6.literal.asJsonNode()
+        assertEquals(42, node6.find("universe").asInt())
+        assertEquals("", result6.remainString)
+
+        val result7 = JsonLiteralImpl.Value.greedyCreate("[\"universe\", 42, 60e8]")
+
+        assertNotNull(result7.literal)
+        val node7 = result7.literal.asJsonNode()
+        val node7array = node7.asArray()
+        assertEquals("universe", node7array[0].asText())
+        assertEquals(42, node7array[1].asInt())
+        assertEquals(60e8, node7array[2].asNumber())
+        assertEquals("", result7.remainString)
     }
 
     @Test
@@ -539,15 +583,16 @@ internal class JsonLiteralImplTest {
     @Test
     internal fun jStringCreateTest() {
         listOf(
-            "\"\\\\\"",
-            "\"abcd\"",
-            "\"\\\"\"",
-            "\"\\u66AF\""
+            Pair("\"\\\\\"", "\\"),
+            Pair("\"abcd\"", "abcd"),
+            Pair("\"\\\"\"", "\""),
+            Pair("\"\\u66AF\"", "暯")
         ).forEach {
-            val result = JsonLiteralImpl.JString.greedyCreate(it)
+            val result = JsonLiteralImpl.JString.greedyCreate(it.first)
 
             assertNotNull(result.literal)
-            assertEquals(it, result.literal.asString())
+            assertEquals(it.first, result.literal.asString())
+            assertEquals(it.second, result.literal.getTheString())
             assertEquals("", result.remainString)
         }
 
@@ -634,7 +679,7 @@ internal class JsonLiteralImplTest {
     }
 
     private fun literalTest(
-        literalCreator: (String) -> GreedyCreateResult,
+        literalCreator: (String) -> GreedyCreateResult<JsonLiteral>,
         originalString: String,
         childrenStrList: List<String>,
         remain: String
@@ -649,7 +694,7 @@ internal class JsonLiteralImplTest {
 
     private fun oneCharLiteralTest(
         theChar: Char,
-        literalCreator: (String) -> GreedyCreateResult
+        literalCreator: (String) -> GreedyCreateResult<JsonLiteral>
     ) {
         literalTest(literalCreator, theChar.toString(), listOf("", theChar.toString(), ""), "")
         literalTest(literalCreator, " \t\n$theChar \n", listOf(" \t\n", theChar.toString(), " \n"), "")

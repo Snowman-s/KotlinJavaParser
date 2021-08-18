@@ -7,7 +7,5 @@ internal class NumberNode(data: Number) : AbstractNode() {
 
     override fun asNumber(): Number = number
 
-    override fun asInt(): Int = number.toInt()
-
     override fun toString(): String = number.toString()
 }

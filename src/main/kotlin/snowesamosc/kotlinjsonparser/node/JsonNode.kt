@@ -9,7 +9,7 @@ interface JsonNode {
     /**
      * このNodeが配列に変換可能なら、変換したものを返します。
      *
-     * @throws snowesamosc.kotlinjsonparser.JsonException このNodeが配列に変換できない場合。
+     * @throws IllegalStateException このNodeが配列に変換できない場合。
      */
     fun asArray(): Array<JsonNode>
 
@@ -26,14 +26,14 @@ interface JsonNode {
     /**
      * このNodeが整数に変換可能なら、変換したものを返します。
      *
-     * @throws snowesamosc.kotlinjsonparser.JsonException このNodeが整数に変換できない場合。
+     * @throws IllegalStateException このNodeが整数に変換できない場合。
      */
     fun asInt(): Int
 
     /**
      * このNodeが数値に変換可能なら、変換したものを返します。
      *
-     * @throws snowesamosc.kotlinjsonparser.JsonException このNodeが数値に変換できない場合。
+     * @throws IllegalStateException このNodeが数値に変換できない場合。
      */
     fun asNumber(): Number
 
@@ -45,7 +45,7 @@ interface JsonNode {
     /**
      * このNodeが真偽値に変換可能なら、変換したものを返します。
      *
-     * @throws snowesamosc.kotlinjsonparser.JsonException このNodeが真偽値に変換できない場合。
+     * @throws IllegalStateException このNodeが真偽値に変換できない場合。
      */
     fun asBoolean(): Boolean
 
@@ -68,7 +68,7 @@ interface JsonNode {
     /**
      * このNodeの、このkeyに対応する子が取得可能なら、その子を返します。
      *
-     * @throws snowesamosc.kotlinjsonparser.JsonException keyに対応する子が存在しない場合。
+     * @throws IllegalStateException keyに対応する子が存在しない場合。
      */
     fun get(key: String): JsonNode
 

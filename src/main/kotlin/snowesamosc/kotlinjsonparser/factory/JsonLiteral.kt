@@ -2,7 +2,7 @@ package snowesamosc.kotlinjsonparser.factory
 
 import snowesamosc.kotlinjsonparser.node.JsonNode
 
-interface JsonLiteral {
+internal interface JsonLiteral {
     fun asString(): String
 
     fun hasChildren(): Boolean
