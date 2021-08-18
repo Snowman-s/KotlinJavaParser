@@ -7,7 +7,7 @@ class JsonLiteralParser {
     fun parse(str: String): JsonNode {
         val result = JsonLiteralImpl.JsonText.greedyCreate(str)
 
-        if (result.literal == null) {
+        if (result.literal == null || result.remainString.isNotEmpty()) {
             throw JsonException("cannot parse str")
         }
 
