@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm") version "1.5.20"
     idea
     application
+    id("org.jetbrains.dokka") version "1.5.0"
 }
 
 group = "me.snowman"
@@ -22,7 +23,7 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile>() {
+tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
 }
 
